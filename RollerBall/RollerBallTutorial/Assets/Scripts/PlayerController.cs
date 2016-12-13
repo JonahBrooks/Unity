@@ -12,7 +12,7 @@ public class PlayerController : MonoBehaviour {
     public Plane ground;
 
     private Rigidbody rb;
-
+    private SpringJoint sj;
     private int count;
 
     private bool vr;
@@ -20,6 +20,7 @@ public class PlayerController : MonoBehaviour {
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
+        sj = GetComponent<SpringJoint>();
         count = 0;
         setCountText();
         winText.text = "";
@@ -55,16 +56,23 @@ public class PlayerController : MonoBehaviour {
                 } else
                 {
                     winText.text = "No moo";
+                    // Set intercept to a sentinal indicating no target exists
+                    intercept = new Vector3(0, 99, 0);
                 }
                 
             }
             // Get touch platform intercept
         }
 
-        Vector3 movement = intercept - transform.position;
+        Vector3 movement = intercept;
         movement.y = 0;
 
-        rb.AddForce(movement * speed);
+        // Set connectedAnchor to the target position if it exists
+        if (intercept.y < 2)
+        {
+            sj.connectedAnchor = movement;
+        }
+        //rb.AddForce(movement * speed);
     }
 
     private void OnTriggerEnter(Collider other)
