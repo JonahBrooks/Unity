@@ -8,12 +8,17 @@ public class CameraScript : MonoBehaviour {
 
     public GameObject player;
 
+
     //private Vector3 offset;
     //private Vector3 rotate;
 	
     // Use this for initialization
 	void Start () {
         //offset = transform.position - player.transform.position;
+        if(UnityEditorInternal.VR.VREditor.GetVREnabled(UnityEditor.BuildTargetGroup.Android) == false)
+        {
+            transform.Rotate(45, 0, 0);
+        }
     }
 
 
