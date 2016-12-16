@@ -10,10 +10,12 @@ public class PlayerController : MonoBehaviour {
     public Text winText;
     public Camera camera;
     public Plane ground;
+    public float DuckRotationSpeed;
 
     private Rigidbody rb;
     private SpringJoint sj;
     private int count;
+    private Vector3 last;
 
     private bool vr;
 
@@ -25,6 +27,24 @@ public class PlayerController : MonoBehaviour {
         setCountText();
         winText.text = "";
         vr = UnityEditorInternal.VR.VREditor.GetVREnabled(UnityEditor.BuildTargetGroup.Android);
+        last = transform.position;
+    }
+
+    private void Update()
+    {
+        Vector3 vect = transform.position - last;
+        if (vect != Vector3.zero)
+        {
+            Quaternion.Slerp(
+                transform.rotation, 
+                Quaternion.LookRotation(vect), 
+                Time.deltaTime * DuckRotationSpeed
+                );
+        }
+        transform.rotation = Quaternion.Euler(0, transform.eulerAngles.y, 0);
+        last = transform.position;
+
+
     }
 
     private void FixedUpdate()
