@@ -9,7 +9,7 @@ public class PlayerController : MonoBehaviour {
     public Text countText;
     public Text winText;
     public Camera camera;
-    public Plane ground;
+    public Vector3 groundXYZ;
     public float DuckRotationSpeed;
 
     private Rigidbody rb;
@@ -26,7 +26,7 @@ public class PlayerController : MonoBehaviour {
         count = 0;
         setCountText();
         winText.text = "";
-        vr = UnityEditorInternal.VR.VREditor.GetVREnabled(UnityEditor.BuildTargetGroup.Android);
+        vr = UnityEngine.VR.VRSettings.enabled;
         last = transform.position;
     }
 
@@ -59,29 +59,42 @@ public class PlayerController : MonoBehaviour {
         {
             moveHorizontal = camera.transform.rotation.y;
             moveVertical = -(camera.transform.rotation.x - ((float)Mathf.PI) / 4.0f + 0.5f);
-        } else // Otherwise use the mouse or touch screen location
+        } else if (Input.mousePresent) // Otherwise use the mouse or touch screen location
         {
             // Get mouse platform intercept
-            winText.text = "No Mouse";
-            if (Input.mousePresent)
+            winText.text = "No Intercept";
+            center = camera.ScreenPointToRay(Input.mousePosition);
+            RaycastHit moo;
+            Physics.Raycast(center, out moo, 1000f);
+            if (moo.transform != null)
             {
-                winText.text = "No Intercept";
-                center = camera.ScreenPointToRay(Input.mousePosition);
-                RaycastHit moo;
-                Physics.Raycast(center, out moo, 1000f);
-                if (moo.transform != null)
-                {
-                    winText.text = moo.point.ToString();
-                    intercept = moo.point;
-                } else
-                {
-                    winText.text = "No moo";
-                    // Set intercept to a sentinal indicating no target exists
-                    intercept = new Vector3(0, 99, 0);
-                }
-                
+                winText.text = moo.point.ToString();
+                intercept = moo.point;
+            } else
+            {
+                winText.text = "No moo";
+                // Set intercept to a sentinal indicating no target exists
+                intercept = new Vector3(0, 99, 0);
             }
-            // Get touch platform intercept
+                
+        } else if (Input.touchCount > 0)// Touchscreen
+        {
+            // Get mouse platform intercept
+            winText.text = "No Intercept";
+            center = camera.ScreenPointToRay(Input.GetTouch(0).position);
+            RaycastHit moo;
+            Physics.Raycast(center, out moo, 1000f);
+            if (moo.transform != null)
+            {
+                winText.text = moo.point.ToString();
+                intercept = moo.point;
+            }
+            else
+            {
+                winText.text = "No moo";
+                // Set intercept to a sentinal indicating no target exists
+                intercept = new Vector3(0, 99, 0);
+            }
         }
 
         Vector3 movement = intercept;
@@ -97,9 +110,18 @@ public class PlayerController : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other)
     {
+        float randomx = Random.value * groundXYZ.x - groundXYZ.x / 2.0f;
+        float randomz = Random.value * groundXYZ.z - groundXYZ.z / 2.0f;
+        float gemy = groundXYZ.y;
+
+        
+
         if(other.gameObject.CompareTag("Pickup"))
         {
-            other.gameObject.SetActive(false);
+
+            //other.gameObject.SetActive(false);
+            // TODO: Add gem to timed queue of some sort
+            other.gameObject.transform.position = new Vector3(randomx, gemy, randomz); 
             count++;
             setCountText();
         }

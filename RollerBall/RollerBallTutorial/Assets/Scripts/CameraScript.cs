@@ -15,7 +15,7 @@ public class CameraScript : MonoBehaviour {
     // Use this for initialization
 	void Start () {
         //offset = transform.position - player.transform.position;
-        if(UnityEditorInternal.VR.VREditor.GetVREnabled(UnityEditor.BuildTargetGroup.Android) == false)
+        if(UnityEngine.VR.VRSettings.enabled == false)
         {
             transform.Rotate(45, 0, 0);
         }
