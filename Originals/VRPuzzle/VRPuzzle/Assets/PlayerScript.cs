@@ -94,16 +94,13 @@ public class PlayerScript : MonoBehaviour {
             // TODO: Use Time.deltaTime
             current.transform.Translate(delta, Space.World);
         }
-        // TODO: Detect proximity to board.
-            // TODO: Calculate distance using just the X and Z coordinates of board and current
+        // Detect proximity to board.
         if (current != null)
         {
-            // TODO: Remove these unused variables
             boardXYZ = board.GetComponentInChildren<Renderer>().bounds.center;
             brickXYZ = current.GetComponentInChildren<Renderer>().bounds.center;
             boardHWL = board.GetComponentInChildren<Renderer>().bounds.size;
             brickHWL = current.GetComponentInChildren<Renderer>().bounds.size;
-            debug.text = Vector3.Distance(brickXYZ,boardXYZ).ToString();
 
             // Check to see if brick is above and close enough to board
             if(brickXYZ.y - boardXYZ.y < snapDistance &&
@@ -116,8 +113,23 @@ public class PlayerScript : MonoBehaviour {
             {
                 // Debug: current.transform.Rotate(new Vector3(1, 0, 0), 90);
             }
+            // TODO: Display shadow of where piece will place
+            
+            if (Physics.Raycast(brickXYZ, new Vector3(0, -1, 0), out hit) && 
+                  hit.collider.transform.parent.tag == "Board")
+            {
+                debug.text = hit.point.ToString();
+            }
+            // TODO: Switch statement on current tag to get piece shape
+            // TODO: For each case, find the matrix spots that will be filled
+            // TODO: Display shadow
+            // TODO: Update variable indicating whether it can be placed or not; reference that above
+            // TODO: Left click becomes place at 90 degree snaps if possible, buzz if not.
         }
-        // TODO: Left click becomes place at 90 degree snaps if possible, buzz if not.
+        
+            // Figure out where in the matrix the current piece starts
+                // Physics raycast along y from piece?
+
         // TODO: Call board functions to place piece.
     }
 }
