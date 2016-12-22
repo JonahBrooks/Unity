@@ -5,14 +5,16 @@ using UnityEngine.UI;
 
 public class PlayerScript : MonoBehaviour {
 
-    // To hold the brick currently currently being moved, if any.
-    public GameObject current;
-    public float mouse_speed;
+    // To hold stats for the brick currently being moved, if any.
+    public float mouseSpeed;
+    public float rotationSpeed;
     // To hold nearest game board (Currently only game board)
     public GameObject board;
     // For debugging
     public Text debug;
 
+    // To hold the brick currently being moved, if any.
+    private GameObject current;
     // To hold the current rotation (in degrees) of the current brick.
     private float rotation;
     // To hold the last none position of the mouse
@@ -55,7 +57,7 @@ public class PlayerScript : MonoBehaviour {
                         current = hit.collider.transform.parent.gameObject;
                         // Reset current statistics
                         rotation = 0;
-                        last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouse_speed;
+                        last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
                     }
                 }
             }
@@ -65,7 +67,7 @@ public class PlayerScript : MonoBehaviour {
             // TODO: Handle camera
         }
         // Get middle click, rotate brick by 90 degree chunks.
-        if (Input.GetMouseButtonDown(3))
+        if (Input.GetMouseButtonDown(2))
         {
             if (current != null)
             {
@@ -74,15 +76,14 @@ public class PlayerScript : MonoBehaviour {
                 rotation = rotation % 360;
             }
         }
-        // TODO: Get middle mouse wheel, rotate brick.
-
-        // Detect motion of mouse and update current, if any.
+        current.transform.Rotate(new Vector3(0, 1, 0), Input.GetAxis("Mouse ScrollWheel") * rotationSpeed);
         if (current != null)
         {
-            delta = new Vector3(Input.mousePosition.x,0, Input.mousePosition.y)*mouse_speed - last;
-            last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouse_speed;
+            delta = new Vector3(Input.mousePosition.x,0, Input.mousePosition.y)*mouseSpeed - last;
+            last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
 
-            current.transform.Translate(delta);
+            // TODO: Use Time.deltaTime
+            current.transform.Translate(delta, Space.World);
             debug.text = delta.ToString();
         }
         // TODO: Detect proximity to board.
