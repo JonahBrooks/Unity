@@ -60,7 +60,7 @@ public class PlayerScript : MonoBehaviour {
                 ray = Camera.main.ScreenPointToRay(Input.mousePosition);
                 if (Physics.Raycast(ray,out hit))
                 {
-                    if(hit.collider.transform.parent.tag == "Brick")
+                    if(hit.collider.transform.tag == "Brick")
                     {
                         // Hold that object into current.
                         current = hit.collider.transform.parent.gameObject;
@@ -120,7 +120,27 @@ public class PlayerScript : MonoBehaviour {
             {
                 debug.text = hit.point.ToString();
             }
-            // TODO: Switch statement on current tag to get piece shape
+            debug.text = current.tag;
+            // Switch statement on current tag to get piece shape
+            switch (current.tag)
+            {
+                case "I-brick":
+                    debug.text = "Moo";
+                    break;
+                case "J-brick":
+                    break;
+                case "L-brick":
+                    break;
+                case "O-brick":
+                    break;
+                case "S-brick":
+                    break;
+                case "T-brick":
+                    break;
+                case "Z-brick":
+                    break;
+
+            }
             // TODO: For each case, find the matrix spots that will be filled
             // TODO: Display shadow
             // TODO: Update variable indicating whether it can be placed or not; reference that above
