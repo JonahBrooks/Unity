@@ -45,8 +45,12 @@ public class PlayerScript : MonoBehaviour {
         // Height, width, length
         Vector3 boardHWL;
         Vector3 brickHWL;
+        // Position in the board matrix of the center piece
+        Vector2 mpos;
+        // Board script
+        BoardScript bs = (board.GetComponent("BoardScript") as BoardScript);
 
-		// Get left click information.
+        // Get left click information.
         if (Input.GetMouseButtonDown(0))
         {
             if (current != null)
@@ -119,12 +123,19 @@ public class PlayerScript : MonoBehaviour {
                   hit.collider.transform.parent.tag == "Board")
             {
                 debug.text = hit.point.ToString();
+                // TODO: Move the calculating to BoardScript so I just pass the hit.point
+                mpos.x = (int)(Mathf.Floor(hit.point.x / bs.gridwidth));
+                mpos.y = (int)(Mathf.Floor(hit.point.z / bs.gridheight));
             }
             debug.text = current.tag;
             // Switch statement on current tag to get piece shape
+            // TODO: if (bs.checkGrid(mpos.x, mpos.y))
             switch (current.tag)
             {
                 case "I-brick":
+                    // TODO: if bs.checkGrid(mpos.x - 1, mpos.y) && bs.checkGrid(mpos.x + 1, mpos.y) &&
+                    // TODO:    bs.checkGrid(mpos.x + 2, mpos.y)
+                    // TODO: but if it's rotated past 45 but less than 135 etc, increment y, etc
                     debug.text = "Moo";
                     break;
                 case "J-brick":
