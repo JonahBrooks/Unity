@@ -12,11 +12,17 @@ public class PlayerScript : MonoBehaviour {
     public GameObject board;
     // Distance at which a piece will snap into place if dropped
     public float snapDistance;
+    // Shadows for indicating whether a piece can be placed or not
+    public GameObject RSh0, RSh1, RSh2, RSh3; // Red shadows gameobjects
+    public GameObject BSh0, BSh1, BSh2, BSh3; // Blue shadow game objects
     // For debugging
     public Text debug;
 
     // To hold the brick currently being moved, if any.
     private GameObject current;
+    // Grouping shadows
+    private GameObject[] RSh;
+    private GameObject[] BSh;
     // To hold the current rotation (in degrees) of the current brick.
     private float rotation;
     // To hold the last none position of the mouse
@@ -33,7 +39,11 @@ public class PlayerScript : MonoBehaviour {
         current = null;
         rotation = 0.0f;
         last = new Vector3(0, 0, 0);
-	}
+        BSh = new GameObject[4];
+        BSh[0] = BSh0; BSh[1] = BSh1; BSh[2] = BSh2; BSh[3] = BSh3;
+        RSh = new GameObject[4];
+        RSh[0] = RSh0; RSh[1] = RSh1; RSh[2] = RSh2; RSh[3] = RSh3;
+    }
 	
 	// Update is called once per frame
 	void Update () {
@@ -123,8 +133,8 @@ public class PlayerScript : MonoBehaviour {
                 // Debug: current.transform.Rotate(new Vector3(1, 0, 0), 90);
             }
             // TODO: Display shadow of where piece will place
-            mpos.x = -1;
-            mpos.y = -1;
+            mpos.x = (int)-1;
+            mpos.y = (int)-1;
             if (Physics.Raycast(brickXYZ, new Vector3(0, -1, 0), out hit) && 
                   hit.collider.transform.parent.tag == "Board")
             {
@@ -135,7 +145,7 @@ public class PlayerScript : MonoBehaviour {
             }
             debug.text = current.tag;
             // Switch statement on current tag to get piece shape
-            if (bs.checkGrid(mpos.x, mpos.y))
+            if (bs.checkGrid((int)mpos.x, (int)mpos.y))
             switch (current.tag)
             {
                 case "I-brick":

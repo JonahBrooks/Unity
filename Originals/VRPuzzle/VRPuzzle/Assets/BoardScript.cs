@@ -15,7 +15,7 @@ public class BoardScript : MonoBehaviour {
     // Matrix for storing pieces
     private bool[,] board = new bool[16,16];
 
-    // TODO: Function for trying to set a piece: Return success or fail. Place piece if success.
+    // Function for checking a single block on the grid for fullness
     // Input: An x,y coordinate from (-gridwidth/2,-gridheigh/2) to (gridwidh/2,gridheight/2)
     // Output: Whether this grid coordinate is empty (true) or not (false)
     public bool checkGrid(int x, int y)
@@ -27,13 +27,12 @@ public class BoardScript : MonoBehaviour {
         return board[x, y];
     }
 
-    public bool checkGrid(float x, float y)
+    // Function for checking an entire piece but not placing it
+    // Input: 8 coordinates of 4 blocks in 1 brick
+    // Output: True if all blocks can be placed, False is not
+    public bool checkBrick(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
     {
-        if (x < 0 || y < 0 || x > gridwidth || y > gridheight)
-        {
-            return false;
-        }
-        return board[(int)x, (int)y];
+        return checkGrid(x0, y0) & checkGrid(x1, y1) & checkGrid(x2, y2) & checkGrid(x3, y3);
     }
 
     // Use this for initialization
