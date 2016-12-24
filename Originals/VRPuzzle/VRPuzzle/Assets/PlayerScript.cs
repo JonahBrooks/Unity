@@ -91,7 +91,12 @@ public class PlayerScript : MonoBehaviour {
         }
         if (current != null)
         {
+            // Rotate with mouse wheel
+            rotation += Input.GetAxis("Mouse ScrollWheel") * rotationSpeed;
+            rotation = rotation % 360;
             current.transform.Rotate(new Vector3(0, 1, 0), Input.GetAxis("Mouse ScrollWheel") * rotationSpeed);
+
+            // Move with mouse
             delta = new Vector3(Input.mousePosition.x,0, Input.mousePosition.y)*mouseSpeed - last;
             last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
 
@@ -118,38 +123,203 @@ public class PlayerScript : MonoBehaviour {
                 // Debug: current.transform.Rotate(new Vector3(1, 0, 0), 90);
             }
             // TODO: Display shadow of where piece will place
-            
+            mpos.x = -1;
+            mpos.y = -1;
             if (Physics.Raycast(brickXYZ, new Vector3(0, -1, 0), out hit) && 
                   hit.collider.transform.parent.tag == "Board")
             {
                 debug.text = hit.point.ToString();
                 // TODO: Move the calculating to BoardScript so I just pass the hit.point
-                mpos.x = (int)(Mathf.Floor(hit.point.x / bs.gridwidth));
-                mpos.y = (int)(Mathf.Floor(hit.point.z / bs.gridheight));
+                mpos.x = (int)(Mathf.Floor(hit.point.x / bs.gridwidth)) + bs.gridwidth/2;
+                mpos.y = (int)(Mathf.Floor(hit.point.z / bs.gridheight)) + bs.gridheight/2;
             }
             debug.text = current.tag;
             // Switch statement on current tag to get piece shape
-            // TODO: if (bs.checkGrid(mpos.x, mpos.y))
+            if (bs.checkGrid(mpos.x, mpos.y))
             switch (current.tag)
             {
                 case "I-brick":
-                    // TODO: if bs.checkGrid(mpos.x - 1, mpos.y) && bs.checkGrid(mpos.x + 1, mpos.y) &&
+                        if (rotation >= 0 && rotation < 45)
+                        {
+                            // Brick shape:
+                            //  [][*][][]
+
+                        }
+                        else if (rotation >= 45 && rotation < 135)
+                        {
+                            // []
+                            // [*]
+                            // []
+                            // []
+                        } else if (rotation >= 135 && rotation < 180)
+                        {
+                            // [][][*][]
+                        } else
+                        {
+                            // []
+                            // []
+                            // [*]
+                            // []
+                        }
+                    // TODO:    if bs.checkGrid(mpos.x - 1, mpos.y) && bs.checkGrid(mpos.x + 1, mpos.y) &&
                     // TODO:    bs.checkGrid(mpos.x + 2, mpos.y)
                     // TODO: but if it's rotated past 45 but less than 135 etc, increment y, etc
                     debug.text = "Moo";
                     break;
                 case "J-brick":
-                    break;
+                        if (rotation >= 0 && rotation < 45)
+                        {
+                            // Brick shape:
+                            //  []
+                            //  []
+                            //[][*]
+
+                        }
+                        else if (rotation >= 45 && rotation < 135)
+                        {
+                            // []
+                            // [*][][]
+                        }
+                        else if (rotation >= 135 && rotation < 180)
+                        {
+                            // [*][]
+                            // []
+                            // []
+                        }
+                        else
+                        {
+                            // [][][*]
+                            //     []
+                        }
+                        break;
                 case "L-brick":
-                    break;
+                        if (rotation >= 0 && rotation < 45)
+                        {
+                            // Brick shape:
+                            //  []
+                            //  []
+                            //  [*][]
+
+                        }
+                        else if (rotation >= 45 && rotation < 135)
+                        {
+                            // [*][][]
+                            // []
+                        }
+                        else if (rotation >= 135 && rotation < 180)
+                        {
+                            // [][*]
+                            //   []
+                            //   []
+                        }
+                        else
+                        {
+                            //    []
+                            //[][][*]
+                        }
+                        break;
                 case "O-brick":
-                    break;
+                        if (rotation >= 0 && rotation < 45)
+                        {
+                            // Brick shape:
+                            //  [][]
+                            //  [*][]
+
+                        }
+                        else if (rotation >= 45 && rotation < 135)
+                        { 
+                            //  [*][]
+                            //  [][]
+                        }
+                        else if (rotation >= 135 && rotation < 180)
+                        {
+                            //  [][*]
+                            //  [][]
+                        }
+                        else
+                        {
+                            //  [][]
+                            //  [][*]
+                        }
+                        break;
                 case "S-brick":
-                    break;
+                        if (rotation >= 0 && rotation < 45)
+                        {
+                            // Brick shape:
+                            //  [][]
+                            //[][*]
+
+                        }
+                        else if (rotation >= 45 && rotation < 135)
+                        {
+                            // []
+                            // [*][]
+                            //    []
+                        }
+                        else if (rotation >= 135 && rotation < 180)
+                        {
+                            //  [*][]
+                            //[][]
+                        }
+                        else
+                        {
+                            // []
+                            // [][*]
+                            //   []
+                        }
+                        break;
                 case "T-brick":
-                    break;
+                        if (rotation >= 0 && rotation < 45)
+                        {
+                            // Brick shape:
+                            //    []
+                            //  [][*][]
+
+                        }
+                        else if (rotation >= 45 && rotation < 135)
+                        {
+                            // []
+                            // [*][]
+                            // []
+                        }
+                        else if (rotation >= 135 && rotation < 180)
+                        {
+                            // [][*][]
+                            //   []
+                        }
+                        else
+                        {
+                            //   []
+                            // [][*]
+                            //   []
+                        }
+                        break;
                 case "Z-brick":
-                    break;
+                        if (rotation >= 0 && rotation < 45)
+                        {
+                            // Brick shape:
+                            //  [][*]
+                            //    [][]
+
+                        }
+                        else if (rotation >= 45 && rotation < 135)
+                        {
+                            //   []
+                            // [][*]
+                            // []
+                        }
+                        else if (rotation >= 135 && rotation < 180)
+                        {
+                            // [][]
+                            //   [*][]
+                        }
+                        else
+                        {
+                            //    []
+                            // [*][]
+                            // []
+                        }
+                        break;
 
             }
             // TODO: For each case, find the matrix spots that will be filled

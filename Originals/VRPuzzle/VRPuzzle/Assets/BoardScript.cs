@@ -20,13 +20,20 @@ public class BoardScript : MonoBehaviour {
     // Output: Whether this grid coordinate is empty (true) or not (false)
     public bool checkGrid(int x, int y)
     {
-        // TODO: Account for going from point to grid, get rid of this int version
-        return board[x+gridwidth/2, y+gridheight/2];
+        if (x < 0 || y < 0 || x > gridwidth || y > gridheight)
+        {
+            return false;
+        }
+        return board[x, y];
     }
 
     public bool checkGrid(float x, float y)
     {
-        return board[(int)x+gridwidth/2, (int)y+gridheight/2];
+        if (x < 0 || y < 0 || x > gridwidth || y > gridheight)
+        {
+            return false;
+        }
+        return board[(int)x, (int)y];
     }
 
     // Use this for initialization
