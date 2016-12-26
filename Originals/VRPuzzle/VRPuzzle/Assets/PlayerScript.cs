@@ -165,14 +165,15 @@ public class PlayerScript : MonoBehaviour {
               hit.collider.transform.parent.tag == "Board")
         {
             // Calculate the board position on which this block lies.
-            x = (int)(Mathf.Floor(hit.point.x / bs.gridwidth)) + bs.gridwidth / 2;
-            y = (int)(Mathf.Floor(hit.point.z / bs.gridheight)) + bs.gridheight / 2;
+            x = Mathf.FloorToInt(hit.point.x) + bs.gridwidth / 2;
+            y = Mathf.FloorToInt(hit.point.z) + bs.gridheight / 2;
+            debug.text = x + " " + y;
         }
         //debug.text = current.tag;
         // Switch statement on current tag to get piece shape
         if (bs.checkGrid((int)x, (int)y))
         {
-            debug.text = "Trying to cast shadow " + rotation.ToString();
+            //debug.text = "Trying to cast shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString();
             switch (current.tag)
             {
                 case "I-brick":
@@ -180,7 +181,7 @@ public class PlayerScript : MonoBehaviour {
                     {
                         // Brick shape:
                         //  [][*][][]
-                        debug.text = "Casting shadow " + x.ToString();
+                        //debug.text = "Casting shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString();
                         return bs.checkBrick(x - 1, y, x, y, x + 1, y, x + 2, y);
                     }
                     else if (rotation >= 45 && rotation < 135)
@@ -189,10 +190,12 @@ public class PlayerScript : MonoBehaviour {
                         // [*]
                         // []
                         // []
+                        return bs.checkBrick(x, y+1, x, y, x, y-1, x, y-2);
                     }
                     else if (rotation >= 135 && rotation < 225)
                     {
                         // [][][*][]
+                        return bs.checkBrick(x-2, y, x-1, y, x, y, x+1, y);
                     }
                     else
                     {
@@ -200,6 +203,7 @@ public class PlayerScript : MonoBehaviour {
                         // []
                         // [*]
                         // []
+                        return bs.checkBrick(x, y+2, x, y+1, x, y, x, y-1);
                     }
                     break;
                 case "J-brick":
@@ -209,23 +213,26 @@ public class PlayerScript : MonoBehaviour {
                         //  []
                         //  []
                         //[][*]
-
+                        return bs.checkBrick(x, y+2, x, y+1, x, y, x-1, y);
                     }
                     else if (rotation >= 45 && rotation < 135)
                     {
                         // []
                         // [*][][]
+                        return bs.checkBrick(x, y+1, x, y, x+1, y, x+2, y);
                     }
                     else if (rotation >= 135 && rotation < 225)
                     {
                         // [*][]
                         // []
                         // []
+                        return bs.checkBrick(x+1, y, x, y, x, y-1, x, y-2);
                     }
                     else
                     {
                         // [][][*]
                         //     []
+                        return bs.checkBrick(x-2, y, x-1, y, x, y, x, y-1);
                     }
                     break;
                 case "L-brick":
@@ -235,23 +242,26 @@ public class PlayerScript : MonoBehaviour {
                         //  []
                         //  []
                         //  [*][]
-
+                        return bs.checkBrick(x, y+2, x, y+1, x, y, x+1, y);
                     }
                     else if (rotation >= 45 && rotation < 135)
                     {
                         // [*][][]
                         // []
+                        return bs.checkBrick(x, y-1, x, y, x+1, y, x+2, y);
                     }
                     else if (rotation >= 135 && rotation < 225)
                     {
                         // [][*]
                         //   []
                         //   []
+                        return bs.checkBrick(x-1, y, x, y, x, y-1, x, y-2);
                     }
                     else
                     {
                         //    []
                         //[][][*]
+                        return bs.checkBrick(x-2, y, x-1, y, x, y, x, y+1);
                     }
                     break;
                 case "O-brick":
@@ -260,22 +270,25 @@ public class PlayerScript : MonoBehaviour {
                         // Brick shape:
                         //  [][]
                         //  [*][]
-
+                        return bs.checkBrick(x, y+1, x+1, y+1, x, y, x+1, y);
                     }
                     else if (rotation >= 45 && rotation < 135)
                     {
                         //  [*][]
                         //  [][]
+                        return bs.checkBrick(x, y, x+1, y, x, y-1, x+1, y-1);
                     }
                     else if (rotation >= 135 && rotation < 225)
                     {
                         //  [][*]
                         //  [][]
+                        return bs.checkBrick(x-1, y, x, y, x-1, y-1, x, y-1);
                     }
                     else
                     {
                         //  [][]
                         //  [][*]
+                        return bs.checkBrick(x-1, y+1, x, y+1, x-1, y, x, y);
                     }
                     break;
                 case "S-brick":
@@ -284,24 +297,27 @@ public class PlayerScript : MonoBehaviour {
                         // Brick shape:
                         //  [][]
                         //[][*]
-
+                        return bs.checkBrick(x-1, y, x, y, x, y+1, x+1, y+1);
                     }
                     else if (rotation >= 45 && rotation < 135)
                     {
                         // []
                         // [*][]
                         //    []
+                        return bs.checkBrick(x, y+1, x, y, x+1, y, x+1, y-1);
                     }
                     else if (rotation >= 135 && rotation < 225)
                     {
                         //  [*][]
                         //[][]
+                        return bs.checkBrick(x-1, y-1, x, y-1, x, y, x+1, y);
                     }
                     else
                     {
                         // []
                         // [][*]
                         //   []
+                        return bs.checkBrick(x-1, y+1, x-1, y, x, y, x, y-1);
                     }
                     break;
                 case "T-brick":
@@ -310,24 +326,27 @@ public class PlayerScript : MonoBehaviour {
                         // Brick shape:
                         //    []
                         //  [][*][]
-
+                        return bs.checkBrick(x-1, y, x, y, x, y+1, x+1, y);
                     }
                     else if (rotation >= 45 && rotation < 135)
                     {
                         // []
                         // [*][]
                         // []
+                        return bs.checkBrick(x, y+1, x, y, x+1, y, x, y-1);
                     }
                     else if (rotation >= 135 && rotation < 225)
                     {
                         // [][*][]
                         //   []
+                        return bs.checkBrick(x-1, y, x, y, x, y-1, x+1, y);
                     }
                     else
                     {
                         //   []
                         // [][*]
                         //   []
+                        return bs.checkBrick(x, y+1, x-1, y, x, y, x, y-1);
                     }
                     break;
                 case "Z-brick":
@@ -336,24 +355,27 @@ public class PlayerScript : MonoBehaviour {
                         // Brick shape:
                         //  [][*]
                         //    [][]
-
+                        return bs.checkBrick(x-1, y, x, y, x, y-1, x+1, y-1);
                     }
                     else if (rotation >= 45 && rotation < 135)
                     {
                         //   []
                         // [][*]
                         // []
+                        return bs.checkBrick(x, y+1, x, y, x-1, y, x-1, y-1);
                     }
                     else if (rotation >= 135 && rotation < 225)
                     {
                         // [][]
                         //   [*][]
+                        return bs.checkBrick(x-1, y+1, x, y+1, x, y, x+1, y);
                     }
                     else
                     {
                         //    []
                         // [*][]
                         // []
+                        return bs.checkBrick(x+1, y+1, x+1, y, x, y, x, y-1);
                     }
                     break;
 

@@ -17,7 +17,7 @@ public class BoardScript : MonoBehaviour {
     public GameObject BSh0, BSh1, BSh2, BSh3; // Blue shadow game objects
 
     // Matrix for storing pieces
-    private bool[,] board = new bool[16,16];
+    private bool[,] board;
     // Grouping shadows
     private GameObject[] RSh;
     private GameObject[] BSh;
@@ -27,7 +27,7 @@ public class BoardScript : MonoBehaviour {
     // Output: Whether this grid coordinate is empty (true) or not (false)
     public bool checkGrid(int x, int y)
     {
-        if (x < 0 || y < 0 || x > gridwidth || y > gridheight)
+        if (x < 0 || y < 0 || x >= gridwidth || y >= gridheight)
         {
             return false;
         }
@@ -44,10 +44,10 @@ public class BoardScript : MonoBehaviour {
         if (isValid)
         {
             // TODO: Blue shadow in all locations
-            BSh0.transform.position = new Vector3(x0, groundY, y0);
-            BSh1.transform.position = new Vector3(x1, groundY, y1);
-            BSh2.transform.position = new Vector3(x2, groundY, y2);
-            BSh3.transform.position = new Vector3(x3, groundY, y3);
+            BSh0.transform.position = new Vector3(x0 - gridwidth/2, groundY, y0 - gridheight/2);
+            BSh1.transform.position = new Vector3(x1 - gridwidth/2, groundY, y1 - gridheight/2);
+            BSh2.transform.position = new Vector3(x2 - gridwidth/2, groundY, y2 - gridheight/2);
+            BSh3.transform.position = new Vector3(x3 - gridwidth/2, groundY, y3 - gridheight/2);
         } else
         {
             // TODO: Red shadow in any valid locations
@@ -58,9 +58,11 @@ public class BoardScript : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-		for (int i = 0; i < 16; i++)
+        board = new bool[gridwidth, gridheight];
+
+        for (int i = 0; i < gridwidth; i++)
         {
-            for (int j = 0; j < 16; j++)
+            for (int j = 0; j < gridheight; j++)
             {
                 board[i,j] = false; // Set board to empty
             }
