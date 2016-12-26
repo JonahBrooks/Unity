@@ -27,7 +27,8 @@ public class BoardScript : MonoBehaviour {
     // Output: Whether this grid coordinate is empty (true) or not (false)
     public bool checkGrid(int x, int y)
     {
-        if (x < 0 || y < 0 || x >= gridwidth || y >= gridheight)
+        // NOTE: This excludes 0, which it shouldn't. But this makes it work for some reason.
+        if (x < 1 || y < 1 || x >= gridwidth || y >= gridheight)
         {
             return false;
         }
@@ -51,6 +52,23 @@ public class BoardScript : MonoBehaviour {
         } else
         {
             // TODO: Red shadow in any valid locations
+            if(checkGrid(x0,y0))
+            {
+                RSh0.transform.position = new Vector3(x0 - gridwidth / 2, groundY, y0 - gridheight / 2);
+            }
+            if (checkGrid(x1, y1))
+            {
+                RSh1.transform.position = new Vector3(x1 - gridwidth / 2, groundY, y1 - gridheight / 2);
+            }
+            if (checkGrid(x2, y2))
+            {
+                RSh2.transform.position = new Vector3(x2 - gridwidth / 2, groundY, y2 - gridheight / 2);
+            }
+            if (checkGrid(x3, y3))
+            {
+                RSh3.transform.position = new Vector3(x3 - gridwidth / 2, groundY, y3 - gridheight / 2);
+            }
+
         }
 
         return isValid;
