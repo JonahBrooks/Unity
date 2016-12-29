@@ -61,6 +61,7 @@ public class PlayerScript : MonoBehaviour {
                 // TODO: Check for board status before letting go.
                 current = null;
                 rotation = 0;
+                bs.clearShadows();
             }
             else
             {   // Pick up piece, if one is targetted
@@ -80,8 +81,10 @@ public class PlayerScript : MonoBehaviour {
                         }
                         rotation = rotation % 360;
                         last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
+                        castShadow();
                     }
                 }
+                
             }
         }
         if (Input.GetMouseButtonDown(1))
@@ -173,9 +176,9 @@ public class PlayerScript : MonoBehaviour {
             // Calculate the board position on which this block lies.
             x = Mathf.FloorToInt(hit.point.x) + bs.gridwidth / 2;
             y = Mathf.FloorToInt(hit.point.z) + bs.gridheight / 2;
-            debug.text = x + " " + y;
+            //debug.text = x + " " + y;
         }
-        //debug.text = current.tag;
+        //debug.text = rotation.ToString();
         // Switch statement on current tag to get piece shape
          //debug.text = "Trying to cast shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString();
         switch (current.tag)

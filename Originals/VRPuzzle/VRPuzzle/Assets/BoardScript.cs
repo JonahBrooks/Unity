@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BoardScript : MonoBehaviour {
 
@@ -15,6 +16,9 @@ public class BoardScript : MonoBehaviour {
     // Shadows for indicating whether a piece can be placed or not
     public GameObject RSh0, RSh1, RSh2, RSh3; // Red shadows gameobjects
     public GameObject BSh0, BSh1, BSh2, BSh3; // Blue shadow game objects
+
+    // Debug text
+    public Text debug;
 
     // Matrix for storing pieces
     private bool[,] board;
@@ -35,38 +39,91 @@ public class BoardScript : MonoBehaviour {
         return !board[x, y];
     }
 
+    public void clearShadows(string flag = "all")
+    {
+        if (flag == "blue" || flag == "all")
+        {
+            foreach (GameObject brick in BSh)
+            {
+                brick.SetActive(false);
+            }
+        }
+        if (flag == "red" || flag == "all")
+        {
+            foreach (GameObject brick in RSh)
+            {
+                brick.SetActive(false);
+            }
+        }
+        //debug.text = "Clearing " + flag + " shadows.";
+    }
+
     // Function for checking an entire piece but not placing it
     // Input: 8 coordinates of 4 blocks in 1 brick
     // Output: True if all blocks can be placed, False is not
     public bool checkBrick(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
     {
         bool isValid = checkGrid(x0, y0) & checkGrid(x1, y1) & checkGrid(x2, y2) & checkGrid(x3, y3);
+        //debug.text = isValid.ToString() + " " + x0.ToString() + " " + y0.ToString()
+        //    + " " + x1.ToString() + " " + y1.ToString()
+        //    + " " + x2.ToString() + " " + y2.ToString()
+        //    + " " + x3.ToString() + " " + y3.ToString();
+                   //+ checkGrid(x0,y0).ToString() + checkGrid(x1,y1).ToString() + checkGrid(x2,y2).ToString() 
+                   //+ checkGrid(x3, y3).ToString();
 
         if (isValid)
         {
-            // TODO: Blue shadow in all locations
+            // Clear any active shadows before casting new ones
+            clearShadows("red");
+            // Cast blue shadow
+            foreach (GameObject brick in BSh)
+            {
+                brick.SetActive(true);
+            }
             BSh0.transform.position = new Vector3(x0 - gridwidth/2, groundY, y0 - gridheight/2);
             BSh1.transform.position = new Vector3(x1 - gridwidth/2, groundY, y1 - gridheight/2);
             BSh2.transform.position = new Vector3(x2 - gridwidth/2, groundY, y2 - gridheight/2);
             BSh3.transform.position = new Vector3(x3 - gridwidth/2, groundY, y3 - gridheight/2);
         } else
         {
-            // TODO: Red shadow in any valid locations
-            if(checkGrid(x0,y0))
+            // Clear any active shadows before casting new ones
+            clearShadows("blue");
+            // Cast red shadow in valid positions if other positions are invalid
+            if (checkGrid(x0,y0))
             {
+                RSh0.SetActive(true);
                 RSh0.transform.position = new Vector3(x0 - gridwidth / 2, groundY, y0 - gridheight / 2);
+            }
+            else
+            {
+                RSh0.SetActive(false);
             }
             if (checkGrid(x1, y1))
             {
+                RSh1.SetActive(true);
                 RSh1.transform.position = new Vector3(x1 - gridwidth / 2, groundY, y1 - gridheight / 2);
+            }
+            else
+            {
+                RSh1.SetActive(false);
             }
             if (checkGrid(x2, y2))
             {
+                RSh2.SetActive(true);
                 RSh2.transform.position = new Vector3(x2 - gridwidth / 2, groundY, y2 - gridheight / 2);
+            }
+            else
+            {
+                RSh2.SetActive(false);
             }
             if (checkGrid(x3, y3))
             {
+                RSh3.SetActive(true);
                 RSh3.transform.position = new Vector3(x3 - gridwidth / 2, groundY, y3 - gridheight / 2);
+            }
+            else
+            {
+                RSh3.SetActive(false);
             }
 
         }
