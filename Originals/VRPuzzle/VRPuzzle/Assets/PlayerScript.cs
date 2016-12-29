@@ -108,15 +108,16 @@ public class PlayerScript : MonoBehaviour {
                         Mathf.FloorToInt(brickXYZ.x),
                         boardXYZ.y + brickHWL.y/2,
                         Mathf.FloorToInt(brickXYZ.z));
-                }
-                // Remove tag so you can't pick piece up again
-                foreach (Transform child in current.transform)
-                { 
-                    if(child.CompareTag("Brick"))
+                    // Remove tag so you can't pick piece up again
+                    foreach (Transform child in current.transform)
                     {
-                        child.tag = "Set";
+                        if (child.CompareTag("Brick"))
+                        {
+                            child.tag = "Set";
+                        }
                     }
                 }
+                
                 current = null;
                 rotation = 0;
                 bs.clearShadows();
