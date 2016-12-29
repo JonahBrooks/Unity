@@ -131,6 +131,18 @@ public class BoardScript : MonoBehaviour {
         return isValid;
     }
 
+    // Sets all blocks in a brick to true in the board matrix
+    public void setBrick(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
+    {
+        if (checkBrick(x0,y0,x1,y1,x2,y2,x3,y3))
+        {
+            board[x0, y0] = true;
+            board[x1, y1] = true;
+            board[x2, y2] = true;
+            board[x3, y3] = true;
+        }
+    }
+
     // Use this for initialization
     void Start () {
         board = new bool[gridwidth, gridheight];

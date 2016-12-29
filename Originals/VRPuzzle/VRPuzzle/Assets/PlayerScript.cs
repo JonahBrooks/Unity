@@ -53,12 +53,70 @@ public class PlayerScript : MonoBehaviour {
         // Board script
         BoardScript bs = (board.GetComponent("BoardScript") as BoardScript);
 
+        // Detect proximity to board.
+        if (current != null)
+        {
+            boardXYZ = board.GetComponentInChildren<Renderer>().bounds.center;
+            brickXYZ = current.GetComponentInChildren<Renderer>().bounds.center;
+            boardHWL = board.GetComponentInChildren<Renderer>().bounds.size;
+            brickHWL = current.GetComponentInChildren<Renderer>().bounds.size;
+
+            // Check to see if brick is above and close enough to board
+            if (brickXYZ.y - boardXYZ.y < snapDistance &&
+                brickXYZ.y - boardXYZ.y > 0 &&
+                brickXYZ.x + brickHWL.x / 2.0f > boardXYZ.x - boardHWL.x / 2.0f &&
+                brickXYZ.x - brickHWL.x / 2.0f < boardXYZ.x + boardHWL.x / 2.0f &&
+                brickXYZ.z + brickHWL.z / 2.0f > boardXYZ.z - boardHWL.z / 2.0f &&
+                brickXYZ.z - brickHWL.z / 2.0f < boardXYZ.z + boardHWL.z / 2.0f
+              )
+            {
+                // Debug: current.transform.Rotate(new Vector3(1, 0, 0), 90);
+                castShadow();
+            }
+        }
+
         // Get left click information.
         if (Input.GetMouseButtonDown(0))
         {
             if (current != null)
             {   // Let go of piece
-                // TODO: Check for board status before letting go.
+                // Check for board status before letting go.
+                if (castShadow())
+                {
+                    // Piece can be placed
+                    // Set piece in board
+                    castShadow(true);
+                    // Rotate piece to place on board
+                    if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
+                    {
+                        rotation = 0;
+                    }
+                    else if (rotation >= 45 && rotation < 135)
+                    {
+                        rotation = 90;
+                    }
+                    else if (rotation >= 135 && rotation < 225)
+                    {
+                        rotation = 180;
+                    }
+                    else
+                    {
+                        rotation = 270;
+                    }
+                    current.transform.eulerAngles = new Vector3(0, rotation, 0);
+                    current.transform.position = new Vector3(
+                        Mathf.FloorToInt(brickXYZ.x),
+                        boardXYZ.y + brickHWL.y/2,
+                        Mathf.FloorToInt(brickXYZ.z));
+                }
+                // Remove tag so you can't pick piece up again
+                foreach (Transform child in current.transform)
+                { 
+                    if(child.CompareTag("Brick"))
+                    {
+                        child.tag = "Set";
+                    }
+                }
                 current = null;
                 rotation = 0;
                 bs.clearShadows();
@@ -122,27 +180,6 @@ public class PlayerScript : MonoBehaviour {
             current.transform.Translate(delta, Space.World);
             castShadow();
         }
-        // Detect proximity to board.
-        if (current != null)
-        {
-            boardXYZ = board.GetComponentInChildren<Renderer>().bounds.center;
-            brickXYZ = current.GetComponentInChildren<Renderer>().bounds.center;
-            boardHWL = board.GetComponentInChildren<Renderer>().bounds.size;
-            brickHWL = current.GetComponentInChildren<Renderer>().bounds.size;
-
-            // Check to see if brick is above and close enough to board
-            if (brickXYZ.y - boardXYZ.y < snapDistance &&
-                brickXYZ.y - boardXYZ.y > 0 &&
-                brickXYZ.x + brickHWL.x / 2.0f > boardXYZ.x - boardHWL.x / 2.0f &&
-                brickXYZ.x - brickHWL.x / 2.0f < boardXYZ.x + boardHWL.x / 2.0f &&
-                brickXYZ.z + brickHWL.z / 2.0f > boardXYZ.z - boardHWL.z / 2.0f &&
-                brickXYZ.z - brickHWL.z / 2.0f < boardXYZ.z + boardHWL.z / 2.0f
-              )
-            {
-                // Debug: current.transform.Rotate(new Vector3(1, 0, 0), 90);
-                castShadow();
-            }
-        }
         
             // Figure out where in the matrix the current piece starts
                 // Physics raycast along y from piece?
@@ -154,7 +191,7 @@ public class PlayerScript : MonoBehaviour {
     // Casts a shadow of the piece on the board, indicating whether it can be played or not
     // Input: None, but it uses current
     // Output: True if the piece can be placed, false if not
-    private bool castShadow()
+    private bool castShadow(bool set = false)
     {
         RaycastHit hit;
         // Position
@@ -189,6 +226,7 @@ public class PlayerScript : MonoBehaviour {
                     // Brick shape:
                     //  [][*][][]
                     //debug.text = "Casting shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString();
+                    if (set) bs.setBrick(x - 1, y, x, y, x + 1, y, x + 2, y);
                     return bs.checkBrick(x - 1, y, x, y, x + 1, y, x + 2, y);
                 }
                 else if (rotation >= 45 && rotation < 135)
@@ -197,11 +235,13 @@ public class PlayerScript : MonoBehaviour {
                     // [*]
                     // []
                     // []
+                    if (set) bs.setBrick(x, y + 1, x, y, x, y - 1, x, y - 2);
                     return bs.checkBrick(x, y+1, x, y, x, y-1, x, y-2);
                 }
                 else if (rotation >= 135 && rotation < 225)
                 {
                     // [][][*][]
+                    if (set) bs.setBrick(x - 2, y, x - 1, y, x, y, x + 1, y);
                     return bs.checkBrick(x-2, y, x-1, y, x, y, x+1, y);
                 }
                 else
@@ -210,6 +250,7 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     // [*]
                     // []
+                    if (set) bs.setBrick(x, y + 2, x, y + 1, x, y, x, y - 1);
                     return bs.checkBrick(x, y+2, x, y+1, x, y, x, y-1);
                 }
                 break;
@@ -220,12 +261,14 @@ public class PlayerScript : MonoBehaviour {
                     //  []
                     //  []
                     //[][*]
+                    if (set) bs.setBrick(x, y + 2, x, y + 1, x, y, x - 1, y);
                     return bs.checkBrick(x, y+2, x, y+1, x, y, x-1, y);
                 }
                 else if (rotation >= 45 && rotation < 135)
                 {
                     // []
                     // [*][][]
+                    if (set) bs.setBrick(x, y + 1, x, y, x + 1, y, x + 2, y);
                     return bs.checkBrick(x, y+1, x, y, x+1, y, x+2, y);
                 }
                 else if (rotation >= 135 && rotation < 225)
@@ -233,12 +276,14 @@ public class PlayerScript : MonoBehaviour {
                     // [*][]
                     // []
                     // []
+                    if (set) bs.setBrick(x + 1, y, x, y, x, y - 1, x, y - 2);
                     return bs.checkBrick(x+1, y, x, y, x, y-1, x, y-2);
                 }
                 else
                 {
                     // [][][*]
                     //     []
+                    if (set) bs.setBrick(x - 2, y, x - 1, y, x, y, x, y - 1);
                     return bs.checkBrick(x-2, y, x-1, y, x, y, x, y-1);
                 }
                 break;
@@ -249,12 +294,14 @@ public class PlayerScript : MonoBehaviour {
                     //  []
                     //  []
                     //  [*][]
+                    if (set) bs.setBrick(x, y + 2, x, y + 1, x, y, x + 1, y);
                     return bs.checkBrick(x, y+2, x, y+1, x, y, x+1, y);
                 }
                 else if (rotation >= 45 && rotation < 135)
                 {
                     // [*][][]
                     // []
+                    if (set) bs.setBrick(x, y - 1, x, y, x + 1, y, x + 2, y);
                     return bs.checkBrick(x, y-1, x, y, x+1, y, x+2, y);
                 }
                 else if (rotation >= 135 && rotation < 225)
@@ -262,12 +309,14 @@ public class PlayerScript : MonoBehaviour {
                     // [][*]
                     //   []
                     //   []
+                    if (set) bs.setBrick(x - 1, y, x, y, x, y - 1, x, y - 2);
                     return bs.checkBrick(x-1, y, x, y, x, y-1, x, y-2);
                 }
                 else
                 {
                     //    []
                     //[][][*]
+                    if (set) bs.setBrick(x - 2, y, x - 1, y, x, y, x, y + 1);
                     return bs.checkBrick(x-2, y, x-1, y, x, y, x, y+1);
                 }
                 break;
@@ -277,24 +326,28 @@ public class PlayerScript : MonoBehaviour {
                     // Brick shape:
                     //  [][]
                     //  [*][]
+                    if (set) bs.setBrick(x, y + 1, x + 1, y + 1, x, y, x + 1, y);
                     return bs.checkBrick(x, y+1, x+1, y+1, x, y, x+1, y);
                 }
                 else if (rotation >= 45 && rotation < 135)
                 {
                     //  [*][]
                     //  [][]
+                    if (set) bs.setBrick(x, y, x + 1, y, x, y - 1, x + 1, y - 1);
                     return bs.checkBrick(x, y, x+1, y, x, y-1, x+1, y-1);
                 }
                 else if (rotation >= 135 && rotation < 225)
                 {
                     //  [][*]
                     //  [][]
+                    if (set) bs.setBrick(x - 1, y, x, y, x - 1, y - 1, x, y - 1);
                     return bs.checkBrick(x-1, y, x, y, x-1, y-1, x, y-1);
                 }
                 else
                 {
                     //  [][]
                     //  [][*]
+                    if (set) bs.setBrick(x - 1, y + 1, x, y + 1, x - 1, y, x, y);
                     return bs.checkBrick(x-1, y+1, x, y+1, x-1, y, x, y);
                 }
                 break;
@@ -304,6 +357,7 @@ public class PlayerScript : MonoBehaviour {
                     // Brick shape:
                     //  [][]
                     //[][*]
+                    if (set) bs.setBrick(x - 1, y, x, y, x, y + 1, x + 1, y + 1);
                     return bs.checkBrick(x-1, y, x, y, x, y+1, x+1, y+1);
                 }
                 else if (rotation >= 45 && rotation < 135)
@@ -311,12 +365,14 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     // [*][]
                     //    []
+                    if (set) bs.setBrick(x, y + 1, x, y, x + 1, y, x + 1, y - 1);
                     return bs.checkBrick(x, y+1, x, y, x+1, y, x+1, y-1);
                 }
                 else if (rotation >= 135 && rotation < 225)
                 {
                     //  [*][]
                     //[][]
+                    if (set) bs.setBrick(x - 1, y - 1, x, y - 1, x, y, x + 1, y);
                     return bs.checkBrick(x-1, y-1, x, y-1, x, y, x+1, y);
                 }
                 else
@@ -324,6 +380,7 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     // [][*]
                     //   []
+                    if (set) bs.setBrick(x - 1, y + 1, x - 1, y, x, y, x, y - 1);
                     return bs.checkBrick(x-1, y+1, x-1, y, x, y, x, y-1);
                 }
                 break;
@@ -333,6 +390,7 @@ public class PlayerScript : MonoBehaviour {
                     // Brick shape:
                     //    []
                     //  [][*][]
+                    if (set) bs.setBrick(x - 1, y, x, y, x, y + 1, x + 1, y);
                     return bs.checkBrick(x-1, y, x, y, x, y+1, x+1, y);
                 }
                 else if (rotation >= 45 && rotation < 135)
@@ -340,12 +398,14 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     // [*][]
                     // []
+                    if (set) bs.setBrick(x, y + 1, x, y, x + 1, y, x, y - 1);
                     return bs.checkBrick(x, y+1, x, y, x+1, y, x, y-1);
                 }
                 else if (rotation >= 135 && rotation < 225)
                 {
                     // [][*][]
                     //   []
+                    if (set) bs.setBrick(x - 1, y, x, y, x, y - 1, x + 1, y);
                     return bs.checkBrick(x-1, y, x, y, x, y-1, x+1, y);
                 }
                 else
@@ -353,6 +413,7 @@ public class PlayerScript : MonoBehaviour {
                     //   []
                     // [][*]
                     //   []
+                    if (set) bs.setBrick(x, y + 1, x - 1, y, x, y, x, y - 1);
                     return bs.checkBrick(x, y+1, x-1, y, x, y, x, y-1);
                 }
                 break;
@@ -362,6 +423,7 @@ public class PlayerScript : MonoBehaviour {
                     // Brick shape:
                     //  [][*]
                     //    [][]
+                    if (set) bs.setBrick(x - 1, y, x, y, x, y - 1, x + 1, y - 1);
                     return bs.checkBrick(x-1, y, x, y, x, y-1, x+1, y-1);
                 }
                 else if (rotation >= 45 && rotation < 135)
@@ -369,12 +431,14 @@ public class PlayerScript : MonoBehaviour {
                     //   []
                     // [][*]
                     // []
+                    if (set) bs.setBrick(x, y + 1, x, y, x - 1, y, x - 1, y - 1);
                     return bs.checkBrick(x, y+1, x, y, x-1, y, x-1, y-1);
                 }
                 else if (rotation >= 135 && rotation < 225)
                 {
                     // [][]
                     //   [*][]
+                    if (set) bs.setBrick(x - 1, y + 1, x, y + 1, x, y, x + 1, y);
                     return bs.checkBrick(x-1, y+1, x, y+1, x, y, x+1, y);
                 }
                 else
@@ -382,6 +446,7 @@ public class PlayerScript : MonoBehaviour {
                     //    []
                     // [*][]
                     // []
+                    if (set) bs.setBrick(x + 1, y + 1, x + 1, y, x, y, x, y - 1);
                     return bs.checkBrick(x+1, y+1, x+1, y, x, y, x, y-1);
                 }
                 break;
