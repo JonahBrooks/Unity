@@ -1,10 +1,21 @@
 fileFormatVersion: 2
 guid: 511d9c6c14585d741bc80997a0e413c4
-timeCreated: 1482355942
+timeCreated: 1483112177
 licenseType: Free
 MonoImporter:
   serializedVersion: 2
-  defaultReferences: []
+  defaultReferences:
+  - Ground: {instanceID: 0}
+  - WestWall: {instanceID: 0}
+  - EastWall: {instanceID: 0}
+  - NorthWall: {instanceID: 0}
+  - SouthWall: {instanceID: 0}
+  - BlockTrans: {fileID: 1831042871302568, guid: 61f299639608e9f4fa78a3e0c690c6e0,
+      type: 2}
+  - BSh: {fileID: 2100000, guid: 53bdfc4782bc2624384d2cc0b3a01465, type: 2}
+  - RSh: {fileID: 2100000, guid: 69aec9315e198a84abb78f9a7be05682, type: 2}
+  - WSh: {fileID: 2100000, guid: 2b6ce5bb51f100540b4aa8c46f60999f, type: 2}
+  - debug: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 
