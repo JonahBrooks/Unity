@@ -13,9 +13,6 @@ public class PlayerScript : MonoBehaviour {
     // Distance at which a piece will snap into place if dropped
     public float snapDistance;
 
-    // For debugging
-    public Text debug;
-
     // To hold the brick currently being moved, if any.
     private GameObject current;
 
@@ -56,10 +53,18 @@ public class PlayerScript : MonoBehaviour {
         // Detect proximity to board.
         if (current != null)
         {
-            boardXYZ = board.GetComponentInChildren<Renderer>().bounds.center;
+            // This first line is just a contingency in case Pivot doesn't exist
             brickXYZ = current.GetComponentInChildren<Renderer>().bounds.center;
+            boardXYZ = board.GetComponentInChildren<Renderer>().bounds.center;
             boardHWL = board.GetComponentInChildren<Renderer>().bounds.size;
             brickHWL = current.GetComponentInChildren<Renderer>().bounds.size;
+            foreach (Transform child in current.transform)
+            {
+                if (child.tag == "Pivot")
+                {
+                    brickXYZ = child.GetComponentInChildren<Renderer>().bounds.center;
+                }
+            }
 
             // Check to see if brick is above and close enough to board
             if (brickXYZ.y - boardXYZ.y < snapDistance &&
@@ -86,36 +91,8 @@ public class PlayerScript : MonoBehaviour {
                     // Piece can be placed
                     // Set piece in board
                     castShadow(true);
-                    // Rotate piece to place on board
-                    if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
-                    {
-                        rotation = 0;
-                    }
-                    else if (rotation >= 45 && rotation < 135)
-                    {
-                        rotation = 90;
-                    }
-                    else if (rotation >= 135 && rotation < 225)
-                    {
-                        rotation = 180;
-                    }
-                    else
-                    {
-                        rotation = 270;
-                    }
-                    current.transform.eulerAngles = new Vector3(0, rotation, 0);
-                    current.transform.position = new Vector3(
-                        Mathf.FloorToInt(brickXYZ.x),
-                        boardXYZ.y + brickHWL.y/2,
-                        Mathf.FloorToInt(brickXYZ.z));
-                    // Remove tag so you can't pick piece up again
-                    foreach (Transform child in current.transform)
-                    {
-                        if (child.CompareTag("Brick"))
-                        {
-                            child.tag = "Set";
-                        }
-                    }
+                    // Remove piece from game
+                    Destroy(current);
                 }
                 
                 current = null;
@@ -205,12 +182,14 @@ public class PlayerScript : MonoBehaviour {
         x = (int)-1;
         y = (int)-1;
         if (Physics.Raycast(brickXYZ, new Vector3(0, -1, 0), out hit) &&
+              hit.collider.transform.parent != null &&
               hit.collider.transform.parent.tag == "Board")
         {
             // Calculate the board position on which this block lies.
             x = Mathf.FloorToInt(hit.point.x) + bs.gridwidth / 2;
             y = Mathf.FloorToInt(hit.point.z) + bs.gridheight / 2;
             //debug.text = x + " " + y;
+            //Debug.Log("Hit board");
         }
         //debug.text = rotation.ToString();
         // Switch statement on current tag to get piece shape
@@ -222,7 +201,7 @@ public class PlayerScript : MonoBehaviour {
                 {
                     // Brick shape:
                     //  [][*][][]
-                    //debug.text = "Casting shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString();
+                    //Debug.Log("Casting shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString());
                     if (set) bs.setBrick(current, x - 1, y, x, y, x + 1, y, x + 2, y);
                     return bs.checkBrick(x - 1, y, x, y, x + 1, y, x + 2, y);
                 }
