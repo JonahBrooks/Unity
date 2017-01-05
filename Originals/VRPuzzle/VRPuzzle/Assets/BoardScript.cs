@@ -24,6 +24,7 @@ public class BoardScript : MonoBehaviour {
     private GameObject[,] board;
     private GameObject Block;
     private Material[] materials;
+    private int gridMin = 0; // Grid starts at 1
     private bool debug = false;
 
     // Function for checking a single block on the grid for fullness
@@ -32,12 +33,48 @@ public class BoardScript : MonoBehaviour {
     public bool checkGrid(int x, int y)
     {
         // NOTE: This excludes 0, which it shouldn't. But this makes it work for some reason.
-        if (x < 1 || y < 1 || x >= gridwidth || y >= gridheight)
+        if (x < gridMin || y < gridMin || x >= gridwidth || y >= gridheight)
         {
             return false;
         }
         //Debug.Log(x.ToString() + " " + y.ToString());
         return board[x, y].tag != "Set";
+    }
+
+    // Function for checking if a row is entirely filled
+    // Input: The row rumber to be checked
+    // Output: True if the row is entirely filled, false if not
+    public bool checkRow(int y)
+    {
+        bool toReturn = true;
+
+        for (int x = gridMin; x < gridwidth; x++)
+        {
+            if (checkGrid(x,y) == true)
+            {
+                toReturn = false;
+            }
+        }
+
+        return toReturn;
+    }
+
+    // Function for checking if a column is entirely filled
+    // Input: The row rumber to be checked
+    // Output: True if the row is entirely filled, false if not
+    public bool checkCol(int x)
+    {
+        bool toReturn = true;
+
+        for (int y = gridMin; y < gridheight; y++)
+        {
+            if (checkGrid(x, y) == false)
+            {
+                toReturn = false;
+            }
+        }
+
+        return toReturn;
     }
 
     // Erase entire board except for set pieces
@@ -116,7 +153,7 @@ public class BoardScript : MonoBehaviour {
     public void setBrick(GameObject parent, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
     {
         GameObject[] children = new GameObject[4];
-        if (checkBrick(x0,y0,x1,y1,x2,y2,x3,y3))
+        if (checkBrick(x0, y0, x1, y1, x2, y2, x3, y3))
         {
             // Turn on blocks if not already on
             board[x0, y0].GetComponent<Renderer>().enabled = true;
@@ -138,6 +175,16 @@ public class BoardScript : MonoBehaviour {
             board[x1, y1].tag = "Set";
             board[x2, y2].tag = "Set";
             board[x3, y3].tag = "Set";
+
+            // Check for row and column completions
+            if (checkRow(y0) || checkRow(y1) || checkRow(y2) || checkRow(y3))
+            {
+                Debug.Log("Row Complete!");
+            }
+            if (checkCol(x0) || checkCol(x1) || checkCol(x2) || checkCol(x3))
+            {
+                Debug.Log("Column Complete!");
+            }
         }
     }
 
@@ -160,7 +207,7 @@ public class BoardScript : MonoBehaviour {
                 {
                     board[i, j].GetComponent<Renderer>().enabled = true;
                 }
-                if (i == 0 || j == 0)
+                if (i < gridMin || j < gridMin)
                 {
                     board[i, j].GetComponent<Renderer>().enabled = false;
                 }
