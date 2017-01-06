@@ -68,7 +68,7 @@ public class BoardScript : MonoBehaviour {
 
         for (int y = gridMin; y < gridheight; y++)
         {
-            if (checkGrid(x, y) == false)
+            if (checkGrid(x, y) == true)
             {
                 toReturn = false;
             }
@@ -180,10 +180,13 @@ public class BoardScript : MonoBehaviour {
             if (checkRow(y0) || checkRow(y1) || checkRow(y2) || checkRow(y3))
             {
                 Debug.Log("Row Complete!");
+                // Highlight row
             }
             if (checkCol(x0) || checkCol(x1) || checkCol(x2) || checkCol(x3))
             {
                 Debug.Log("Column Complete!");
+                // Highlight column
+
             }
         }
     }
