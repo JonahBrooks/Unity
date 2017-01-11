@@ -16,9 +16,10 @@ public class BoardScript : MonoBehaviour {
     // Block prefab for the game board
     public GameObject BlockTrans;
     // Materials for different shadows
-    public Material BSh;
-    public Material RSh;
-    public Material WSh;
+    public Material BSh;    // Blue Shadow to show possible placement
+    public Material RSh;    // Red Shadow to show impossible placement
+    public Material WSh;    // White Shadow for final placed pieces
+    public Material GSh;    // Gold Shadow to show complete row or column
 
     // Matrix for storing pieces
     private GameObject[,] board;
@@ -175,21 +176,114 @@ public class BoardScript : MonoBehaviour {
             board[x1, y1].tag = "Set";
             board[x2, y2].tag = "Set";
             board[x3, y3].tag = "Set";
+            // Enable Raycast for these blocks
+            board[x0, y0].layer = LayerMask.NameToLayer("Default");
+            board[x1, y1].layer = LayerMask.NameToLayer("Default");
+            board[x2, y2].layer = LayerMask.NameToLayer("Default");
+            board[x3, y3].layer = LayerMask.NameToLayer("Default");
 
             // Check for row and column completions
             if (checkRow(y0) || checkRow(y1) || checkRow(y2) || checkRow(y3))
             {
-                Debug.Log("Row Complete!");
                 // Highlight row
+                for (int i = 0; i < gridwidth; i++)
+                {
+                    if (checkRow(y0))
+                    {
+                        board[i, y0].GetComponent<Renderer>().material = GSh;
+                    }
+                    if (checkRow(y1))
+                    {
+                        board[i, y1].GetComponent<Renderer>().material = GSh;
+                    }
+                    if (checkRow(y2))
+                    {
+                        board[i, y2].GetComponent<Renderer>().material = GSh;
+                    }
+                    if (checkRow(y3))
+                    {
+                        board[i, y3].GetComponent<Renderer>().material = GSh;
+                    }
+                }
+                
+                Debug.Log("Row Complete!");
             }
             if (checkCol(x0) || checkCol(x1) || checkCol(x2) || checkCol(x3))
             {
-                Debug.Log("Column Complete!");
                 // Highlight column
+                for (int i = 0; i < gridheight; i++)
+                {
+                    if (checkCol(x0))
+                    {
+                        board[x0,i].GetComponent<Renderer>().material = GSh;
+                    }
+                    if (checkCol(x1))
+                    {
+                        board[x1,i].GetComponent<Renderer>().material = GSh;
+                    }
+                    if (checkCol(x2))
+                    {
+                        board[x2,i].GetComponent<Renderer>().material = GSh;
+                    }
+                    if (checkCol(x3))
+                    {
+                        board[x3,i].GetComponent<Renderer>().material = GSh;
+                    }
+                }
+                Debug.Log("Column Complete!");
 
             }
         }
     }
+
+    // Clears a row, column, or both if filled upon calling
+    // Input: x and y coordinates in board of clicked block
+    // Output: none
+    public void clearIfGold(int x, int y)
+    {
+        // If row is complete
+        if(checkRow(y))
+        {
+            Debug.Log("GOLD!");
+            for(int i = 0; i < gridwidth; i++)
+            {
+                // TODO: Give points or something
+                // TODO: Special effects
+                // Change each block to white
+                board[i, y].GetComponent<Renderer>().material = WSh;
+                // Make translucent
+                board[i, y].GetComponent<Renderer>().material.color = new Color(1,1,1,0);
+                // Disable
+                board[i, y].SetActive(false);
+                // Unset
+                board[i, y].tag = "Unset";
+                // Disable Raycast from hitting this invisible block
+                board[i, y].layer = LayerMask.NameToLayer("Ignore Raycast");
+            }
+        }
+        // If column is complete
+        if(checkCol(x))
+        {
+            Debug.Log("GOLD!");
+            for (int i = 0; i < gridheight; i++)
+            {
+                // TODO: Give points or something
+                // TODO: Special effects
+                // Change each block to white
+                board[x, i].GetComponent<Renderer>().material = WSh;
+                // Make translucent
+                board[x, i].GetComponent<Renderer>().material.color = new Color(1, 1, 1, 0);
+                // Disable
+                board[x, i].SetActive(false);
+                // Unset
+                board[x, i].tag = "Unset";
+                // Disable Raycast from hitting this invisible block
+                board[i, y].layer = LayerMask.NameToLayer("Ignore Raycast");
+            }
+        }
+        
+    }
+
 
     // Use this for initialization
     void Start () {
@@ -205,6 +299,7 @@ public class BoardScript : MonoBehaviour {
                     groundY - Block.transform.localScale.y, 
                     j - gridheight / 2), Quaternion.identity);
                 board[i, j].layer = LayerMask.NameToLayer("Ignore Raycast");
+                board[i, j].tag = "Unset";
                 board[i, j].GetComponent<Renderer>().enabled = false;
                 if (debug)
                 {

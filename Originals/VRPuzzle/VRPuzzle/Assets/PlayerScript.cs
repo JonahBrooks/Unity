@@ -46,7 +46,8 @@ public class PlayerScript : MonoBehaviour {
         Vector3 boardHWL;
         Vector3 brickHWL;
         // Position in the board matrix of the center piece
-        Vector2 mpos;
+        int x;
+        int y;
         // Board script
         BoardScript bs = (board.GetComponent("BoardScript") as BoardScript);
 
@@ -119,6 +120,16 @@ public class PlayerScript : MonoBehaviour {
                         last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
                         castShadow();
                     }
+                    Debug.Log("Maybe Set?");
+                    if(hit.collider.transform.tag == "Set")
+                    {
+                        Debug.Log("Maybe Gold?");
+                        // Calculate the board position on which this block lies.
+                        // If board can be somewhere other than origin, transform hit.point first
+                        x = Mathf.FloorToInt(hit.point.x) + bs.gridwidth / 2;
+                        y = Mathf.FloorToInt(hit.point.z) + bs.gridheight / 2;
+                        bs.clearIfGold(x,y);
+                    }
                 }
                 
             }
@@ -186,6 +197,7 @@ public class PlayerScript : MonoBehaviour {
               hit.collider.transform.parent.tag == "Board")
         {
             // Calculate the board position on which this block lies.
+            // If board can be somewhere other than origin, transform hit.point first
             x = Mathf.FloorToInt(hit.point.x) + bs.gridwidth / 2;
             y = Mathf.FloorToInt(hit.point.z) + bs.gridheight / 2;
             //debug.text = x + " " + y;
@@ -229,7 +241,7 @@ public class PlayerScript : MonoBehaviour {
                     if (set) bs.setBrick(current, x, y + 2, x, y + 1, x, y, x, y - 1);
                     return bs.checkBrick(x, y+2, x, y+1, x, y, x, y-1);
                 }
-                break;
+                //break;
             case "J-brick":
                 if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
                 {
@@ -262,7 +274,7 @@ public class PlayerScript : MonoBehaviour {
                     if (set) bs.setBrick(current, x - 2, y, x - 1, y, x, y, x, y - 1);
                     return bs.checkBrick(x-2, y, x-1, y, x, y, x, y-1);
                 }
-                break;
+                //break;
             case "L-brick":
                 if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
                 {
@@ -295,7 +307,7 @@ public class PlayerScript : MonoBehaviour {
                     if (set) bs.setBrick(current, x - 2, y, x - 1, y, x, y, x, y + 1);
                     return bs.checkBrick(x-2, y, x-1, y, x, y, x, y+1);
                 }
-                break;
+                //break;
             case "O-brick":
                 if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
                 {
@@ -326,7 +338,7 @@ public class PlayerScript : MonoBehaviour {
                     if (set) bs.setBrick(current, x - 1, y + 1, x, y + 1, x - 1, y, x, y);
                     return bs.checkBrick(x-1, y+1, x, y+1, x-1, y, x, y);
                 }
-                break;
+                //break;
             case "S-brick":
                 if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
                 {
@@ -359,7 +371,7 @@ public class PlayerScript : MonoBehaviour {
                     if (set) bs.setBrick(current, x - 1, y + 1, x - 1, y, x, y, x, y - 1);
                     return bs.checkBrick(x-1, y+1, x-1, y, x, y, x, y-1);
                 }
-                break;
+                //break;
             case "T-brick":
                 if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
                 {
@@ -392,7 +404,7 @@ public class PlayerScript : MonoBehaviour {
                     if (set) bs.setBrick(current, x, y + 1, x - 1, y, x, y, x, y - 1);
                     return bs.checkBrick(x, y+1, x-1, y, x, y, x, y-1);
                 }
-                break;
+                //break;
             case "Z-brick":
                 if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
                 {
@@ -425,7 +437,7 @@ public class PlayerScript : MonoBehaviour {
                     if (set) bs.setBrick(current, x + 1, y + 1, x + 1, y, x, y, x, y - 1);
                     return bs.checkBrick(x+1, y+1, x+1, y, x, y, x, y-1);
                 }
-                break;
+                //break;
 
         }
            
