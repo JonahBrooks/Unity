@@ -153,7 +153,6 @@ public class BoardScript : MonoBehaviour {
     // Sets all blocks in a brick to true in the board matrix
     public void setBrick(GameObject parent, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
     {
-        GameObject[] children = new GameObject[4];
         if (checkBrick(x0, y0, x1, y1, x2, y2, x3, y3))
         {
             // Turn on blocks if not already on
@@ -205,8 +204,6 @@ public class BoardScript : MonoBehaviour {
                         board[i, y3].GetComponent<Renderer>().material = GSh;
                     }
                 }
-                
-                Debug.Log("Row Complete!");
             }
             if (checkCol(x0) || checkCol(x1) || checkCol(x2) || checkCol(x3))
             {
@@ -230,58 +227,42 @@ public class BoardScript : MonoBehaviour {
                         board[x3,i].GetComponent<Renderer>().material = GSh;
                     }
                 }
-                Debug.Log("Column Complete!");
-
             }
         }
     }
 
-    // Clears a row, column, or both if filled upon calling
+    // Clears all gold blocks touching the given block, if it is gold
     // Input: x and y coordinates in board of clicked block
     // Output: none
     public void clearIfGold(int x, int y)
     {
-        // If row is complete
-        if(checkRow(y))
+        // TODO: Give points or something
+        // TODO: Add flashy effects
+
+        // If block is gold
+        if(    x >= gridMin && x < gridwidth
+            && y >= gridMin && y < gridheight
+            && board[x,y].GetComponent<Renderer>().sharedMaterial == GSh)
         {
-            Debug.Log("GOLD!");
-            for(int i = 0; i < gridwidth; i++)
-            {
-                // TODO: Give points or something
-                // TODO: Special effects
-                // Change each block to white
-                board[i, y].GetComponent<Renderer>().material = WSh;
-                // Make translucent
-                board[i, y].GetComponent<Renderer>().material.color = new Color(1,1,1,0);
-                // Disable
-                board[i, y].SetActive(false);
-                // Unset
-                board[i, y].tag = "Unset";
-                // Disable Raycast from hitting this invisible block
-                board[i, y].layer = LayerMask.NameToLayer("Ignore Raycast");
-            }
+            // Clear block
+            // Change each block to white
+            board[x, y].GetComponent<Renderer>().material = WSh;
+            // Make translucent
+            board[x, y].GetComponent<Renderer>().material.color = new Color(1, 1, 1, 0);
+            // Disable
+            board[x, y].GetComponent<Renderer>().enabled = false;
+            // Unset
+            board[x, y].tag = "Unset";
+            // Disable Raycast from hitting this invisible block
+            board[x, y].layer = LayerMask.NameToLayer("Ignore Raycast");
+
+            // recursively call on x-1, x+1, y-1, y+1
+            // NOTE: Recursion feels icky here, but this is so much slicker than I can do it without
+            clearIfGold(x - 1, y);
+            clearIfGold(x + 1, y);
+            clearIfGold(x, y - 1);
+            clearIfGold(x, y + 1);
         }
-        // If column is complete
-        if(checkCol(x))
-        {
-            Debug.Log("GOLD!");
-            for (int i = 0; i < gridheight; i++)
-            {
-                // TODO: Give points or something
-                // TODO: Special effects
-                // Change each block to white
-                board[x, i].GetComponent<Renderer>().material = WSh;
-                // Make translucent
-                board[x, i].GetComponent<Renderer>().material.color = new Color(1, 1, 1, 0);
-                // Disable
-                board[x, i].SetActive(false);
-                // Unset
-                board[x, i].tag = "Unset";
-                // Disable Raycast from hitting this invisible block
-                board[i, y].layer = LayerMask.NameToLayer("Ignore Raycast");
-            }
-        }
-        
     }
 
 

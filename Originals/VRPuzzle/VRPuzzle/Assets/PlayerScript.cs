@@ -120,14 +120,14 @@ public class PlayerScript : MonoBehaviour {
                         last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
                         castShadow();
                     }
-                    Debug.Log("Maybe Set?");
+                    // If clicked on piece is already set
                     if(hit.collider.transform.tag == "Set")
                     {
-                        Debug.Log("Maybe Gold?");
                         // Calculate the board position on which this block lies.
                         // If board can be somewhere other than origin, transform hit.point first
                         x = Mathf.FloorToInt(hit.point.x) + bs.gridwidth / 2;
                         y = Mathf.FloorToInt(hit.point.z) + bs.gridheight / 2;
+                        // Clear row and/or column if they are full
                         bs.clearIfGold(x,y);
                     }
                 }
