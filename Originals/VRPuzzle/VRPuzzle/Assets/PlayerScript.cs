@@ -18,13 +18,14 @@ public class PlayerScript : MonoBehaviour {
 
     // To hold the current rotation (in degrees) of the current brick.
     private float rotation;
-    // To hold the last none position of the mouse
+    // To hold the last known position of the mouse
     private Vector3 last;
     // To hold the delta movement of the mouse since last frame
     private Vector3 delta;
-
+    // Debug text for android debugging
+    public Text debug;
     // For use in changing camera angles
-    // TODO: Add camera movement. Right drag for camera move.
+    // TODO: Add movement. Right drag for camera move.
 
     // Use this for initialization
     void Start () {
@@ -39,6 +40,9 @@ public class PlayerScript : MonoBehaviour {
 	void Update () {
         RaycastHit hit;
         Ray ray;
+        // Acceleration vector
+        Vector3 accelVector;
+        Quaternion accelQuat;
         // Positions
         Vector3 boardXYZ;
         Vector3 brickXYZ;
@@ -169,6 +173,26 @@ public class PlayerScript : MonoBehaviour {
             current.transform.Translate(delta, Space.World);
             castShadow();
         }
+
+        // For Android:
+        accelVector = Input.acceleration;
+        Input.gyro.enabled = true;
+        accelQuat = Input.gyro.attitude;
+        accelQuat.x *= -1;
+        accelQuat.y *= -1;
+        accelQuat.z *= -1;
+        accelQuat.w *= -1;
+        if (accelVector.sqrMagnitude > 1)
+        {
+            accelVector.Normalize();
+        }
+        accelVector *= Time.deltaTime * 1000;
+
+        //Camera.main.transform.Rotate(accelVector);
+        Camera.main.transform.rotation = accelQuat;
+        debug.text = accelQuat.ToString();
+
+
         
     }
 
