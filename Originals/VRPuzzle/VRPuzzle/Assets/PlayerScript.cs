@@ -177,11 +177,10 @@ public class PlayerScript : MonoBehaviour {
         // For Android:
         accelVector = Input.acceleration;
         Input.gyro.enabled = true;
-        accelQuat = Input.gyro.attitude;
-        accelQuat.x *= -1;
-        accelQuat.y *= -1;
-        accelQuat.z *= -1;
-        accelQuat.w *= -1;
+        accelQuat = Quaternion.Inverse(Input.gyro.attitude);
+        accelQuat.SetLookRotation(new Vector3(0, -Mathf.PI/4, 1));
+        accelQuat *= Quaternion.Inverse(Input.gyro.attitude);
+
         if (accelVector.sqrMagnitude > 1)
         {
             accelVector.Normalize();
@@ -190,6 +189,7 @@ public class PlayerScript : MonoBehaviour {
 
         //Camera.main.transform.Rotate(accelVector);
         Camera.main.transform.rotation = accelQuat;
+        
         debug.text = accelQuat.ToString();
 
 
