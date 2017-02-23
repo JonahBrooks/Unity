@@ -12,6 +12,14 @@ public class PlayerScript : MonoBehaviour {
     public GameObject board;
     // Distance at which a piece will snap into place if dropped
     public float snapDistance;
+    // Distance of piece from camera when carried
+    public float pieceDistance;
+    // Speed of camera when using mouse rotation
+    public float cameraSpeed;
+    // Rotation of camera
+    private float yaw;
+    private float pitch;
+    private bool mouse1Down;
 
     // To hold the brick currently being moved, if any.
     private GameObject current;
@@ -33,7 +41,10 @@ public class PlayerScript : MonoBehaviour {
         current = null;
         rotation = 0.0f;
         last = new Vector3(0, 0, 0);
-
+        pitch = 45;
+        yaw = 0;
+        mouse1Down = false;
+        Screen.orientation = ScreenOrientation.LandscapeLeft;
     }
 	
 	// Update is called once per frame
@@ -107,9 +118,13 @@ public class PlayerScript : MonoBehaviour {
             else
             {   // Pick up piece, if one is targetted
                 // Raycast to find object to pick up if no object currently, drop if so.
-                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                //ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                ray = Camera.main.ScreenPointToRay(new Vector3(Camera.main.pixelWidth/2,Camera.main.pixelHeight/2,0));
+                Debug.Log(ray.ToString());
+                Debug.DrawRay(ray.origin, ray.direction, Color.black, 10f);
                 if (Physics.Raycast(ray,out hit))
                 {
+                    Debug.Log("HIT!");
                     if(hit.collider.transform.tag == "Brick")
                     {
                         // Hold that object into current.
@@ -140,7 +155,17 @@ public class PlayerScript : MonoBehaviour {
         }
         if (Input.GetMouseButtonDown(1))
         {
-            // TODO: Handle camera
+            mouse1Down = true;
+        }
+        if(Input.GetMouseButtonUp(1))
+        {
+            mouse1Down = false;
+        }
+        if(mouse1Down)
+        {
+            yaw += cameraSpeed * Input.GetAxis("Mouse X");
+            pitch -= cameraSpeed * Input.GetAxis("Mouse Y");
+            Camera.main.transform.eulerAngles = new Vector3(pitch, yaw, 0);
         }
         // Get middle click, rotate brick by 90 degree chunks.
         if (Input.GetMouseButtonDown(2))
@@ -177,9 +202,10 @@ public class PlayerScript : MonoBehaviour {
         // For Android:
         accelVector = Input.acceleration;
         Input.gyro.enabled = true;
-        accelQuat = Quaternion.Inverse(Input.gyro.attitude);
-        accelQuat.SetLookRotation(new Vector3(0, -Mathf.PI/4, 1));
-        accelQuat *= Quaternion.Inverse(Input.gyro.attitude);
+        accelQuat = Input.gyro.attitude;
+        //accelQuat = Quaternion.Inverse(Input.gyro.attitude);
+        //accelQuat.SetLookRotation(new Vector3(0, -Mathf.PI/4, 1));
+        //accelQuat *= Quaternion.Inverse(Input.gyro.attitude);
 
         if (accelVector.sqrMagnitude > 1)
         {
@@ -188,9 +214,15 @@ public class PlayerScript : MonoBehaviour {
         accelVector *= Time.deltaTime * 1000;
 
         //Camera.main.transform.Rotate(accelVector);
-        Camera.main.transform.rotation = accelQuat;
-        
-        debug.text = accelQuat.ToString();
+        //Camera.main.transform.rotation = accelQuat;
+        Camera.main.transform.Rotate(-Input.gyro.rotationRateUnbiased.x, -Input.gyro.rotationRateUnbiased.y, 0); ;
+        if(current != null)
+        {
+            current.transform.position = new Vector3(Camera.main.ScreenToWorldPoint(Vector3.zero).x, 
+                                                     Camera.main.ScreenToWorldPoint(Vector3.zero).y, 
+                                                     pieceDistance);
+        }
+        debug.text = "X";
 
 
         
