@@ -244,6 +244,26 @@ public class BoardScript : MonoBehaviour {
             && y >= gridMin && y < gridheight
             && board[x,y].GetComponent<Renderer>().sharedMaterial == GSh)
         {
+            // Clear all gold blocks
+            foreach (GameObject block in board)
+            {
+                // If block is gold
+                if (block.GetComponent<Renderer>().sharedMaterial == GSh)
+                {
+                    // Clear block
+                    // Change each block to white
+                    block.GetComponent<Renderer>().material = WSh;
+                    // Make translucent
+                    block.GetComponent<Renderer>().material.color = new Color(1, 1, 1, 0);
+                    // Disable
+                    block.GetComponent<Renderer>().enabled = false;
+                    // Unset
+                    block.tag = "Unset";
+                    // Disable Raycast from hitting this invisible block
+                    block.layer = LayerMask.NameToLayer("Ignore Raycast");
+                }
+            }
+            /* Legacy code for when this just cleared the row or col
             // Clear block
             // Change each block to white
             board[x, y].GetComponent<Renderer>().material = WSh;
@@ -262,6 +282,7 @@ public class BoardScript : MonoBehaviour {
             clearIfGold(x + 1, y);
             clearIfGold(x, y - 1);
             clearIfGold(x, y + 1);
+            */
         }
     }
 

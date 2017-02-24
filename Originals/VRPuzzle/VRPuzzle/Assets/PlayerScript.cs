@@ -12,10 +12,11 @@ public class PlayerScript : MonoBehaviour {
     public GameObject board;
     // Distance at which a piece will snap into place if dropped
     public float snapDistance;
-    // Distance of piece from camera when carried
-    public float pieceDistance;
     // Speed of camera when using mouse rotation
     public float cameraSpeed;
+    // Distance of piece from camera when carried
+    private float pieceDistance;
+    private float tempPieceDistance;
     // Rotation of camera
     private float yaw;
     private float pitch;
@@ -45,6 +46,7 @@ public class PlayerScript : MonoBehaviour {
         yaw = 0;
         mouse1Down = false;
         Screen.orientation = ScreenOrientation.LandscapeLeft;
+        pieceDistance = Vector3.Distance(board.transform.position, Camera.main.transform.position);
     }
 	
 	// Update is called once per frame
@@ -60,6 +62,8 @@ public class PlayerScript : MonoBehaviour {
         // Height, width, length
         Vector3 boardHWL;
         Vector3 brickHWL;
+        // Camera center vector
+        Vector3 screenCenter = new Vector3(Camera.main.pixelWidth / 2, Camera.main.pixelHeight / 2, pieceDistance);
         // Position in the board matrix of the center piece
         int x;
         int y;
@@ -119,7 +123,7 @@ public class PlayerScript : MonoBehaviour {
             {   // Pick up piece, if one is targetted
                 // Raycast to find object to pick up if no object currently, drop if so.
                 //ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                ray = Camera.main.ScreenPointToRay(new Vector3(Camera.main.pixelWidth/2,Camera.main.pixelHeight/2,0));
+                ray = Camera.main.ScreenPointToRay(screenCenter);
                 Debug.Log(ray.ToString());
                 Debug.DrawRay(ray.origin, ray.direction, Color.black, 10f);
                 if (Physics.Raycast(ray,out hit))
@@ -136,7 +140,7 @@ public class PlayerScript : MonoBehaviour {
                             rotation += 360;
                         }
                         rotation = rotation % 360;
-                        last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
+                        //last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
                         castShadow();
                     }
                     // If clicked on piece is already set
@@ -191,8 +195,8 @@ public class PlayerScript : MonoBehaviour {
             current.transform.Rotate(new Vector3(0, 1, 0), Input.GetAxis("Mouse ScrollWheel") * rotationSpeed);
 
             // Move with mouse
-            delta = new Vector3(Input.mousePosition.x,0, Input.mousePosition.y)*mouseSpeed - last;
-            last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
+            //delta = new Vector3(Input.mousePosition.x,0, Input.mousePosition.y)*mouseSpeed - last;
+            //last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
 
             // TODO: Use Time.deltaTime
             current.transform.Translate(delta, Space.World);
@@ -216,12 +220,23 @@ public class PlayerScript : MonoBehaviour {
         //Camera.main.transform.Rotate(accelVector);
         //Camera.main.transform.rotation = accelQuat;
         Camera.main.transform.Rotate(-Input.gyro.rotationRateUnbiased.x, -Input.gyro.rotationRateUnbiased.y, 0); ;
-        if(current != null)
+
+
+        // Keep current block in center of screen
+        if (current != null)
         {
-            current.transform.position = new Vector3(Camera.main.ScreenToWorldPoint(Vector3.zero).x, 
-                                                     Camera.main.ScreenToWorldPoint(Vector3.zero).y, 
-                                                     pieceDistance);
+            current.transform.position = Camera.main.ScreenToWorldPoint(screenCenter);
+            // See if piece is above or below board
+            if (brickXYZ.x + brickHWL.x / 2.0f > boardXYZ.x - boardHWL.x / 2.0f &&
+                brickXYZ.x - brickHWL.x / 2.0f < boardXYZ.x + boardHWL.x / 2.0f &&
+                brickXYZ.z + brickHWL.z / 2.0f > boardXYZ.z - boardHWL.z / 2.0f &&
+                brickXYZ.z - brickHWL.z / 2.0f < boardXYZ.z + boardHWL.z / 2.0f
+               )
+            {
+                current.transform.position = new Vector3(current.transform.position.x, snapDistance, current.transform.position.z);
+            }
         }
+        // Display crosshairs
         debug.text = "X";
 
 
