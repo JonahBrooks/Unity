@@ -204,23 +204,11 @@ public class PlayerScript : MonoBehaviour {
         }
 
         // For Android:
-        accelVector = Input.acceleration;
-        Input.gyro.enabled = true;
-        accelQuat = Input.gyro.attitude;
-        //accelQuat = Quaternion.Inverse(Input.gyro.attitude);
-        //accelQuat.SetLookRotation(new Vector3(0, -Mathf.PI/4, 1));
-        //accelQuat *= Quaternion.Inverse(Input.gyro.attitude);
-
-        if (accelVector.sqrMagnitude > 1)
+        if (!UnityEngine.VR.VRSettings.enabled)
         {
-            accelVector.Normalize();
+            Input.gyro.enabled = true;
+            Camera.main.transform.Rotate(-Input.gyro.rotationRateUnbiased.x, -Input.gyro.rotationRateUnbiased.y, 0); ;
         }
-        accelVector *= Time.deltaTime * 1000;
-
-        //Camera.main.transform.Rotate(accelVector);
-        //Camera.main.transform.rotation = accelQuat;
-        Camera.main.transform.Rotate(-Input.gyro.rotationRateUnbiased.x, -Input.gyro.rotationRateUnbiased.y, 0); ;
-
 
         // Keep current block in center of screen
         if (current != null)
