@@ -3,6 +3,25 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
+//**********************************************
+//
+//TODO:
+//  Add scoring system
+//      Add score display
+//      Increment score when gold bricks are destroyed
+//  Add intro and outro screens
+//  Add optional play modes based on time vs survival
+//      Detect when no moves are possible
+//          End game in one mode, reset board in time mode
+//  Add special effects when removing gold bricks
+//  Add special effects when placing a brick/generating gold bricks?
+//  Add sound
+//  Create method for rotating pieces in VR and Android
+//  Add board variety
+//
+//**********************************************
+
+
 public class PlayerScript : MonoBehaviour {
 
     // To hold stats for the brick currently being moved, if any.
@@ -14,6 +33,8 @@ public class PlayerScript : MonoBehaviour {
     public float snapDistance;
     // Speed of camera when using mouse rotation
     public float cameraSpeed;
+    // Canvas used to hold crosshairs
+    public Canvas CHCanvas;
     // Distance of piece from camera when carried
     private float pieceDistance;
     private float tempPieceDistance;
@@ -34,7 +55,6 @@ public class PlayerScript : MonoBehaviour {
     // Debug text for android debugging
     public Text debug;
     // For use in changing camera angles
-    // TODO: Add movement. Right drag for camera move.
 
     // Use this for initialization
     void Start () {
@@ -47,6 +67,7 @@ public class PlayerScript : MonoBehaviour {
         mouse1Down = false;
         Screen.orientation = ScreenOrientation.LandscapeLeft;
         pieceDistance = Vector3.Distance(board.transform.position, Camera.main.transform.position);
+        CHCanvas.planeDistance = pieceDistance;
     }
 	
 	// Update is called once per frame
@@ -122,8 +143,13 @@ public class PlayerScript : MonoBehaviour {
             else
             {   // Pick up piece, if one is targetted
                 // Raycast to find object to pick up if no object currently, drop if so.
-                //ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-                ray = Camera.main.ScreenPointToRay(screenCenter);
+                // Start by looking where the mouse was clicked
+                ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+                if(!(Physics.Raycast(ray, out hit) && hit.collider.transform.tag == "Brick"))
+                {
+                    // Then check under the crosshairs
+                    ray = Camera.main.ScreenPointToRay(screenCenter);
+                }
                 Debug.Log(ray.ToString());
                 Debug.DrawRay(ray.origin, ray.direction, Color.black, 10f);
                 if (Physics.Raycast(ray,out hit))
