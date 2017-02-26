@@ -233,10 +233,11 @@ public class BoardScript : MonoBehaviour {
 
     // Clears all gold blocks touching the given block, if it is gold
     // Input: x and y coordinates in board of clicked block
-    // Output: none
-    public void clearIfGold(int x, int y)
+    // Output: score generated, if any
+    public int clearIfGold(int x, int y)
     {
-        // TODO: Give points or something
+        int score = 0;
+        int combo = 1;
         // TODO: Add flashy effects
 
         // If block is gold
@@ -261,29 +262,12 @@ public class BoardScript : MonoBehaviour {
                     block.tag = "Unset";
                     // Disable Raycast from hitting this invisible block
                     block.layer = LayerMask.NameToLayer("Ignore Raycast");
+                    // Increase score by 1 for each block removed before this one
+                    score += combo++;
                 }
             }
-            /* Legacy code for when this just cleared the row or col
-            // Clear block
-            // Change each block to white
-            board[x, y].GetComponent<Renderer>().material = WSh;
-            // Make translucent
-            board[x, y].GetComponent<Renderer>().material.color = new Color(1, 1, 1, 0);
-            // Disable
-            board[x, y].GetComponent<Renderer>().enabled = false;
-            // Unset
-            board[x, y].tag = "Unset";
-            // Disable Raycast from hitting this invisible block
-            board[x, y].layer = LayerMask.NameToLayer("Ignore Raycast");
-
-            // recursively call on x-1, x+1, y-1, y+1
-            // NOTE: Recursion feels icky here, but this is so much slicker than I can do it without
-            clearIfGold(x - 1, y);
-            clearIfGold(x + 1, y);
-            clearIfGold(x, y - 1);
-            clearIfGold(x, y + 1);
-            */
         }
+        return score;
     }
 
 

@@ -6,9 +6,7 @@ using UnityEngine.UI;
 //**********************************************
 //
 //TODO:
-//  Add scoring system
-//      Add score display
-//      Increment score when gold bricks are destroyed
+//  Add piece respawning
 //  Add intro and outro screens
 //  Add optional play modes based on time vs survival
 //      Detect when no moves are possible
@@ -16,7 +14,7 @@ using UnityEngine.UI;
 //  Add special effects when removing gold bricks
 //  Add special effects when placing a brick/generating gold bricks?
 //  Add sound
-//  Create method for rotating pieces in VR and Android
+//  Create method for rotating pieces in VR
 //  Add board variety
 //
 //**********************************************
@@ -27,6 +25,7 @@ public class PlayerScript : MonoBehaviour {
     // To hold stats for the brick currently being moved, if any.
     public float mouseSpeed;
     public float rotationSpeed;
+    public float androidRotationSpeed;
     // To hold nearest game board (Currently only game board)
     public GameObject board;
     // Distance at which a piece will snap into place if dropped
@@ -35,6 +34,8 @@ public class PlayerScript : MonoBehaviour {
     public float cameraSpeed;
     // Canvas used to hold crosshairs
     public Canvas CHCanvas;
+    // Score display
+    public Text scoreTxt;
     // Distance of piece from camera when carried
     private float pieceDistance;
     private float tempPieceDistance;
@@ -42,18 +43,15 @@ public class PlayerScript : MonoBehaviour {
     private float yaw;
     private float pitch;
     private bool mouse1Down;
+    // Player score
+    private int score;
 
     // To hold the brick currently being moved, if any.
     private GameObject current;
 
     // To hold the current rotation (in degrees) of the current brick.
     private float rotation;
-    // To hold the last known position of the mouse
-    private Vector3 last;
-    // To hold the delta movement of the mouse since last frame
-    private Vector3 delta;
-    // Debug text for android debugging
-    public Text debug;
+
     // For use in changing camera angles
 
     // Use this for initialization
@@ -61,10 +59,10 @@ public class PlayerScript : MonoBehaviour {
 
         current = null;
         rotation = 0.0f;
-        last = new Vector3(0, 0, 0);
         pitch = 45;
         yaw = 0;
         mouse1Down = false;
+        score = 0;
         Screen.orientation = ScreenOrientation.LandscapeLeft;
         pieceDistance = Vector3.Distance(board.transform.position, Camera.main.transform.position);
         CHCanvas.planeDistance = pieceDistance;
@@ -74,9 +72,6 @@ public class PlayerScript : MonoBehaviour {
 	void Update () {
         RaycastHit hit;
         Ray ray;
-        // Acceleration vector
-        Vector3 accelVector;
-        Quaternion accelQuat;
         // Positions
         Vector3 boardXYZ;
         Vector3 brickXYZ;
@@ -88,6 +83,8 @@ public class PlayerScript : MonoBehaviour {
         // Position in the board matrix of the center piece
         int x;
         int y;
+        // Holds the rotation around the z axis in -180 to 180 degrees
+        float adjustedAngle;
         // Board script
         BoardScript bs = (board.GetComponent("BoardScript") as BoardScript);
 
@@ -177,7 +174,7 @@ public class PlayerScript : MonoBehaviour {
                         x = Mathf.FloorToInt(hit.point.x) + bs.gridwidth / 2;
                         y = Mathf.FloorToInt(hit.point.z) + bs.gridheight / 2;
                         // Clear row and/or column if they are full
-                        bs.clearIfGold(x,y);
+                        score += bs.clearIfGold(x,y);
                     }
                 }
                 
@@ -225,17 +222,38 @@ public class PlayerScript : MonoBehaviour {
             //last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
 
             // TODO: Use Time.deltaTime
-            current.transform.Translate(delta, Space.World);
             castShadow();
         }
 
         // For Android:
-        if (!UnityEngine.VR.VRSettings.enabled)
+        
+        if (Application.platform == RuntimePlatform.Android && !UnityEngine.VR.VRSettings.enabled)
         {
             Input.gyro.enabled = true;
-            Camera.main.transform.Rotate(-Input.gyro.rotationRateUnbiased.x, -Input.gyro.rotationRateUnbiased.y, 0); ;
+            Camera.main.transform.rotation = Input.gyro.attitude;
+            Camera.main.transform.Rotate(0f, 0f, 180f, Space.Self);
+            Camera.main.transform.Rotate(90f, 180f, 0f, Space.World);
+            adjustedAngle = Camera.main.transform.rotation.z;
+            if (current != null && Mathf.Abs(adjustedAngle) > 0.1)
+            {
+                if(adjustedAngle > 0)
+                {
+                    rotation += androidRotationSpeed;
+                    current.transform.Rotate(new Vector3(0, 1, 0), androidRotationSpeed);
+                }
+                if (adjustedAngle < 0)
+                {
+                    rotation -= androidRotationSpeed;
+                    current.transform.Rotate(new Vector3(0, 1, 0), -androidRotationSpeed);
+                }
+                if (rotation < 0)
+                {
+                    rotation += 360;
+                }
+                rotation = rotation % 360;
+                
+            }
         }
-
         // Keep current block in center of screen
         if (current != null)
         {
@@ -250,11 +268,8 @@ public class PlayerScript : MonoBehaviour {
                 current.transform.position = new Vector3(current.transform.position.x, snapDistance, current.transform.position.z);
             }
         }
-        // Display crosshairs
-        debug.text = "X";
 
-
-        
+        scoreTxt.text = "Score: " + score.ToString();
     }
 
 
