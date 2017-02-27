@@ -16,6 +16,8 @@ using UnityEngine.UI;
 //  Add sound
 //  Create method for rotating pieces in VR
 //  Add board variety
+//      Allow for even sized boards
+//      Allow for boards larger than 11 by 11 (currently can't reach the top edge on larger boards)
 //
 //**********************************************
 
@@ -30,6 +32,7 @@ public class PlayerScript : MonoBehaviour {
     public GameObject board;
     // Distance at which a piece will snap into place if dropped
     public float snapDistance;
+    public float maxSnapDistance;
     // Speed of camera when using mouse rotation
     public float cameraSpeed;
     // Canvas used to hold crosshairs
@@ -259,7 +262,8 @@ public class PlayerScript : MonoBehaviour {
         {
             current.transform.position = Camera.main.ScreenToWorldPoint(screenCenter);
             // See if piece is above or below board
-            if (brickXYZ.x + brickHWL.x / 2.0f > boardXYZ.x - boardHWL.x / 2.0f &&
+            if (brickXYZ.y - boardXYZ.y < maxSnapDistance &&
+                brickXYZ.x + brickHWL.x / 2.0f > boardXYZ.x - boardHWL.x / 2.0f &&
                 brickXYZ.x - brickHWL.x / 2.0f < boardXYZ.x + boardHWL.x / 2.0f &&
                 brickXYZ.z + brickHWL.z / 2.0f > boardXYZ.z - boardHWL.z / 2.0f &&
                 brickXYZ.z - brickHWL.z / 2.0f < boardXYZ.z + boardHWL.z / 2.0f
