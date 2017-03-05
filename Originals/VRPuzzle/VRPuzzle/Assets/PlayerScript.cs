@@ -9,8 +9,8 @@ using UnityEngine.UI;
 //  Add piece respawning
 //  Add intro and outro screens
 //  Add optional play modes based on time vs survival
-//      Detect when no moves are possible
-//          End game in one mode, reset board in time mode
+//  Detect when no moves are possible
+//      End game in one mode, reset board in time mode
 //  Add special effects when removing gold bricks
 //  Add special effects when placing a brick/generating gold bricks?
 //  Add sound
@@ -39,6 +39,14 @@ public class PlayerScript : MonoBehaviour {
     public Canvas CHCanvas;
     // Score display
     public Text scoreTxt;
+    // Prefabs for each brick type
+    public GameObject Ibrick;
+    public GameObject Jbrick;
+    public GameObject Lbrick;
+    public GameObject Obrick;
+    public GameObject Sbrick;
+    public GameObject Tbrick;
+    public GameObject Zbrick;
     // Distance of piece from camera when carried
     private float pieceDistance;
     private float tempPieceDistance;
@@ -134,6 +142,8 @@ public class PlayerScript : MonoBehaviour {
                     castShadow(true);
                     // Remove piece from game
                     Destroy(current);
+                    // Generate new piece
+                    spawnPiece();
                 }
                 
                 current = null;
@@ -150,11 +160,8 @@ public class PlayerScript : MonoBehaviour {
                     // Then check under the crosshairs
                     ray = Camera.main.ScreenPointToRay(screenCenter);
                 }
-                Debug.Log(ray.ToString());
-                Debug.DrawRay(ray.origin, ray.direction, Color.black, 10f);
                 if (Physics.Raycast(ray,out hit))
                 {
-                    Debug.Log("HIT!");
                     if(hit.collider.transform.tag == "Brick")
                     {
                         // Hold that object into current.
@@ -276,6 +283,55 @@ public class PlayerScript : MonoBehaviour {
         scoreTxt.text = "Score: " + score.ToString();
     }
 
+    // Spawns a piece into the world at a random location
+    // Input: None
+    // Output: None
+    private void spawnPiece()
+    {
+        Vector3 pos;
+        int rng = (int)(Random.value * 7);
+        // Make vector in camera space first
+        pos = new Vector3(0, 0, snapDistance);
+        // Move into world space
+        pos += Camera.main.transform.position;
+
+        // Rotate about the origin to position randomly
+        pos = Quaternion.AngleAxis(Random.Range(0,360),Vector3.up) * pos;
+        pos = Quaternion.AngleAxis(Random.Range(0, 180), Vector3.left) * pos;
+        // TODO: Make sure it is not hiden by the board
+        
+        Debug.Log("Making piece at " + pos.ToString());
+        switch(rng)
+        {
+            case 0: // I-brick
+                Object.Instantiate(Ibrick, pos, Quaternion.identity);
+                break;
+            case 1: // J-brick
+                Object.Instantiate(Jbrick, pos, Quaternion.identity);
+                break;
+            case 2: // L-brick
+                Object.Instantiate(Lbrick, pos, Quaternion.identity);
+                break;
+            case 3: // O-brick
+                Object.Instantiate(Obrick, pos, Quaternion.identity);
+                break;
+            case 4: // S-brick
+                Object.Instantiate(Sbrick, pos, Quaternion.identity);
+                break;
+            case 5: // T-brick
+                Object.Instantiate(Tbrick, pos, Quaternion.identity);
+                break;
+            case 6: // Z-brick
+                Object.Instantiate(Zbrick, pos, Quaternion.identity);
+                break;
+            case 7: // quirk of C# random generation
+                Object.Instantiate(Lbrick, pos, Quaternion.identity);
+                break; // Should never get here, but maybe since Random.value is inclusive
+            default:
+                Object.Instantiate(Lbrick, pos, Quaternion.identity);
+                break;
+        }
+    }
 
     // Casts a shadow of the piece on the board, indicating whether it can be played or not
     // Input: None, but it uses current
