@@ -6,7 +6,7 @@ using UnityEngine.UI;
 //**********************************************
 //
 //TODO:
-//  Add piece respawning
+//  Add offscreen piece indicators
 //  Add intro and outro screens
 //  Add optional play modes based on time vs survival
 //  Detect when no moves are possible
@@ -291,13 +291,13 @@ public class PlayerScript : MonoBehaviour {
         Vector3 pos;
         int rng = (int)(Random.value * 7);
         // Make vector in camera space first
-        pos = new Vector3(0, 0, snapDistance);
-        // Move into world space
-        pos += Camera.main.transform.position;
+        pos = new Vector3(0, 0, pieceDistance);
 
         // Rotate about the origin to position randomly
         pos = Quaternion.AngleAxis(Random.Range(0,360),Vector3.up) * pos;
         pos = Quaternion.AngleAxis(Random.Range(0, 180), Vector3.left) * pos;
+        // Move into world space
+        pos += Camera.main.transform.position;
         // TODO: Make sure it is not hiden by the board
         
         Debug.Log("Making piece at " + pos.ToString());
