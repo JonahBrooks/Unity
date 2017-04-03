@@ -99,12 +99,16 @@ public class BoardScript : MonoBehaviour {
 
     // Function for checking an entire piece but not placing it
     // Input: 8 coordinates of 4 blocks in 1 brick
+    //          shadow determines if a shadow should be placed on the board
     // Output: True if all blocks can be placed, False is not
-    public bool checkBrick(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
+    public bool checkBrick(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, bool shadow = false)
     {
         bool isValid = checkGrid(x0, y0) & checkGrid(x1, y1) & checkGrid(x2, y2) & checkGrid(x3, y3);
         //Debug.Log("Casting Shadow!");
-
+        if (shadow == false)
+        {
+            return isValid; // Don't cast shadow if shadow is false
+        }
         if (isValid)
         {
             // Clear any active shadows before casting new ones
@@ -151,7 +155,8 @@ public class BoardScript : MonoBehaviour {
     }
 
     // Sets all blocks in a brick to true in the board matrix
-    public void setBrick(GameObject parent, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
+    // Returns: Whether the block was set or not
+    public bool setBrick(GameObject parent, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
     {
         if (checkBrick(x0, y0, x1, y1, x2, y2, x3, y3))
         {
@@ -229,6 +234,7 @@ public class BoardScript : MonoBehaviour {
                 }
             }
         }
+        return checkBrick(x0, y0, x1, y1, x2, y2, x3, y3);
     }
 
     // Clears all gold blocks touching the given block, if it is gold

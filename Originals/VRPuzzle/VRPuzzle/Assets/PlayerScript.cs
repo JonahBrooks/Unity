@@ -63,8 +63,9 @@ public class PlayerScript : MonoBehaviour {
     // To hold the current rotation (in degrees) of the current brick.
     private float rotation;
 
-    // For use in changing camera angles
-
+    // List of bricks currently in play
+    private List<GameObject> brickList;
+    
     // Use this for initialization
     void Start () {
 
@@ -77,6 +78,14 @@ public class PlayerScript : MonoBehaviour {
         Screen.orientation = ScreenOrientation.LandscapeLeft;
         pieceDistance = Vector3.Distance(board.transform.position, Camera.main.transform.position);
         CHCanvas.planeDistance = pieceDistance;
+        brickList = new List<GameObject>();
+        spawnPiece();
+        spawnPiece();
+        spawnPiece();
+        spawnPiece();
+        spawnPiece();
+        spawnPiece();
+        spawnPiece();
     }
 	
 	// Update is called once per frame
@@ -304,33 +313,450 @@ public class PlayerScript : MonoBehaviour {
         switch(rng)
         {
             case 0: // I-brick
-                Object.Instantiate(Ibrick, pos, Quaternion.identity);
+                brickList.Add(Object.Instantiate(Ibrick, pos, Quaternion.identity));
                 break;
             case 1: // J-brick
-                Object.Instantiate(Jbrick, pos, Quaternion.identity);
+                brickList.Add(Object.Instantiate(Jbrick, pos, Quaternion.identity));
                 break;
             case 2: // L-brick
-                Object.Instantiate(Lbrick, pos, Quaternion.identity);
+                brickList.Add(Object.Instantiate(Lbrick, pos, Quaternion.identity));
                 break;
             case 3: // O-brick
-                Object.Instantiate(Obrick, pos, Quaternion.identity);
+                brickList.Add(Object.Instantiate(Obrick, pos, Quaternion.identity));
                 break;
             case 4: // S-brick
-                Object.Instantiate(Sbrick, pos, Quaternion.identity);
+                brickList.Add(Object.Instantiate(Sbrick, pos, Quaternion.identity));
                 break;
             case 5: // T-brick
-                Object.Instantiate(Tbrick, pos, Quaternion.identity);
+                brickList.Add(Object.Instantiate(Tbrick, pos, Quaternion.identity));
                 break;
             case 6: // Z-brick
-                Object.Instantiate(Zbrick, pos, Quaternion.identity);
+                brickList.Add(Object.Instantiate(Zbrick, pos, Quaternion.identity));
                 break;
             case 7: // quirk of C# random generation
-                Object.Instantiate(Lbrick, pos, Quaternion.identity);
+                brickList.Add(Object.Instantiate(Lbrick, pos, Quaternion.identity));
                 break; // Should never get here, but maybe since Random.value is inclusive
             default:
-                Object.Instantiate(Lbrick, pos, Quaternion.identity);
+                brickList.Add(Object.Instantiate(Lbrick, pos, Quaternion.identity));
                 break;
         }
+    }
+
+
+    // Check if a piece brick with rotation rot can be set on the board
+    // Input:   brick is the piece to check
+    //          rot is the current rotation of the piece to check
+    //          x is the position on the game board of the center brick in x
+    //          y is the position on the game board of the center brick in y
+    //          set determines whether the piece should be placed if possible
+    //          shadow determines whether the shadow should be displayed for the piece
+    // Returns: true if brick could be placed
+    private bool checkPiece(GameObject brick, float rot, int x, int y, bool set, bool shadow)
+    {
+        BoardScript bs = (board.GetComponent("BoardScript") as BoardScript);
+        switch (brick.tag)
+        {
+            case "I-brick":
+                if ((rot >= 0 && rot < 45) || (rot >= 315 && rot < 360))
+                {
+                    // Brick shape:
+                    //  [][*][][]
+                    //Debug.Log("Casting shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString());
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y, x, y, x + 1, y, x + 2, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y, x, y, x + 1, y, x + 2, y, shadow);
+                }
+                else if (rot >= 45 && rot < 135)
+                {
+                    // []
+                    // [*]
+                    // []
+                    // []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y + 1, x, y, x, y - 1, x, y - 2))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y + 1, x, y, x, y - 1, x, y - 2, shadow);
+                }
+                else if (rot >= 135 && rot < 225)
+                {
+                    // [][][*][]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 2, y, x - 1, y, x, y, x + 1, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 2, y, x - 1, y, x, y, x + 1, y, shadow);
+                }
+                else
+                {
+                    // []
+                    // []
+                    // [*]
+                    // []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y + 2, x, y + 1, x, y, x, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y + 2, x, y + 1, x, y, x, y - 1, shadow);
+                }
+            //break;
+            case "J-brick":
+                if ((rot >= 0 && rot < 45) || (rot >= 315 && rot < 360))
+                {
+                    // Brick shape:
+                    //  []
+                    //  []
+                    //[][*]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y + 2, x, y + 1, x, y, x - 1, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y + 2, x, y + 1, x, y, x - 1, y, shadow);
+                }
+                else if (rot >= 45 && rot < 135)
+                {
+                    // []
+                    // [*][][]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y + 1, x, y, x + 1, y, x + 2, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y + 1, x, y, x + 1, y, x + 2, y, shadow);
+                }
+                else if (rot >= 135 && rot < 225)
+                {
+                    // [*][]
+                    // []
+                    // []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x + 1, y, x, y, x, y - 1, x, y - 2))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x + 1, y, x, y, x, y - 1, x, y - 2, shadow);
+                }
+                else
+                {
+                    // [][][*]
+                    //     []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 2, y, x - 1, y, x, y, x, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 2, y, x - 1, y, x, y, x, y - 1, shadow);
+                }
+            //break;
+            case "L-brick":
+                if ((rot >= 0 && rot < 45) || (rot >= 315 && rot < 360))
+                {
+                    // Brick shape:
+                    //  []
+                    //  []
+                    //  [*][]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y + 2, x, y + 1, x, y, x + 1, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y + 2, x, y + 1, x, y, x + 1, y, shadow);
+                }
+                else if (rot >= 45 && rot < 135)
+                {
+                    // [*][][]
+                    // []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y - 1, x, y, x + 1, y, x + 2, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y - 1, x, y, x + 1, y, x + 2, y, shadow);
+                }
+                else if (rot >= 135 && rot < 225)
+                {
+                    // [][*]
+                    //   []
+                    //   []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y, x, y, x, y - 1, x, y - 2))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y, x, y, x, y - 1, x, y - 2, shadow);
+                }
+                else
+                {
+                    //    []
+                    //[][][*]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 2, y, x - 1, y, x, y, x, y + 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 2, y, x - 1, y, x, y, x, y + 1, shadow);
+                }
+            //break;
+            case "O-brick":
+                if ((rot >= 0 && rot < 45) || (rot >= 315 && rot < 360))
+                {
+                    // Brick shape:
+                    //  [][]
+                    //  [*][]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y + 1, x + 1, y + 1, x, y, x + 1, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y + 1, x + 1, y + 1, x, y, x + 1, y, shadow);
+                }
+                else if (rot >= 45 && rot < 135)
+                {
+                    //  [*][]
+                    //  [][]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y, x + 1, y, x, y - 1, x + 1, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y, x + 1, y, x, y - 1, x + 1, y - 1, shadow);
+                }
+                else if (rot >= 135 && rot < 225)
+                {
+                    //  [][*]
+                    //  [][]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y, x, y, x - 1, y - 1, x, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y, x, y, x - 1, y - 1, x, y - 1, shadow);
+                }
+                else
+                {
+                    //  [][]
+                    //  [][*]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y + 1, x, y + 1, x - 1, y, x, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y + 1, x, y + 1, x - 1, y, x, y, shadow);
+                }
+            //break;
+            case "S-brick":
+                if ((rot >= 0 && rot < 45) || (rot >= 315 && rot < 360))
+                {
+                    // Brick shape:
+                    //  [][]
+                    //[][*]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y, x, y, x, y + 1, x + 1, y + 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y, x, y, x, y + 1, x + 1, y + 1, shadow);
+                }
+                else if (rot >= 45 && rot < 135)
+                {
+                    // []
+                    // [*][]
+                    //    []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y + 1, x, y, x + 1, y, x + 1, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y + 1, x, y, x + 1, y, x + 1, y - 1, shadow);
+                }
+                else if (rot >= 135 && rot < 225)
+                {
+                    //  [*][]
+                    //[][]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y - 1, x, y - 1, x, y, x + 1, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y - 1, x, y - 1, x, y, x + 1, y, shadow);
+                }
+                else
+                {
+                    // []
+                    // [][*]
+                    //   []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y + 1, x - 1, y, x, y, x, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y + 1, x - 1, y, x, y, x, y - 1, shadow);
+                }
+            //break;
+            case "T-brick":
+                if ((rot >= 0 && rot < 45) || (rot >= 315 && rot < 360))
+                {
+                    // Brick shape:
+                    //    []
+                    //  [][*][]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y, x, y, x, y + 1, x + 1, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y, x, y, x, y + 1, x + 1, y, shadow);
+                }
+                else if (rot >= 45 && rot < 135)
+                {
+                    // []
+                    // [*][]
+                    // []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y + 1, x, y, x + 1, y, x, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y + 1, x, y, x + 1, y, x, y - 1, shadow);
+                }
+                else if (rot >= 135 && rot < 225)
+                {
+                    // [][*][]
+                    //   []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y, x, y, x, y - 1, x + 1, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y, x, y, x, y - 1, x + 1, y, shadow);
+                }
+                else
+                {
+                    //   []
+                    // [][*]
+                    //   []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y + 1, x - 1, y, x, y, x, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y + 1, x - 1, y, x, y, x, y - 1, shadow);
+                }
+            //break;
+            case "Z-brick":
+                if ((rot >= 0 && rot < 45) || (rot >= 315 && rot < 360))
+                {
+                    // Brick shape:
+                    //  [][*]
+                    //    [][]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y, x, y, x, y - 1, x + 1, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y, x, y, x, y - 1, x + 1, y - 1, shadow);
+                }
+                else if (rot >= 45 && rot < 135)
+                {
+                    //   []
+                    // [][*]
+                    // []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x, y + 1, x, y, x - 1, y, x - 1, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x, y + 1, x, y, x - 1, y, x - 1, y - 1, shadow);
+                }
+                else if (rot >= 135 && rot < 225)
+                {
+                    // [][]
+                    //   [*][]
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x - 1, y + 1, x, y + 1, x, y, x + 1, y))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x - 1, y + 1, x, y + 1, x, y, x + 1, y, shadow);
+                }
+                else
+                {
+                    //    []
+                    // [*][]
+                    // []
+                    if (set)
+                    {
+                        if (bs.setBrick(brick, x + 1, y + 1, x + 1, y, x, y, x, y - 1))
+                        {
+                            brickList.Remove(brick);
+                        }
+                    }
+                    return bs.checkBrick(x + 1, y + 1, x + 1, y, x, y, x, y - 1, shadow);
+                }
+                //break;
+        }
+
+        return false; // If the piece is not valid, return false
     }
 
     // Casts a shadow of the piece on the board, indicating whether it can be played or not
@@ -363,249 +789,10 @@ public class PlayerScript : MonoBehaviour {
             //debug.text = x + " " + y;
             //Debug.Log("Hit board");
         }
+
         //debug.text = rotation.ToString();
         // Switch statement on current tag to get piece shape
-         //debug.text = "Trying to cast shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString();
-        switch (current.tag)
-        {
-            case "I-brick":
-                if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
-                {
-                    // Brick shape:
-                    //  [][*][][]
-                    //Debug.Log("Casting shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString());
-                    if (set) bs.setBrick(current, x - 1, y, x, y, x + 1, y, x + 2, y);
-                    return bs.checkBrick(x - 1, y, x, y, x + 1, y, x + 2, y);
-                }
-                else if (rotation >= 45 && rotation < 135)
-                {
-                    // []
-                    // [*]
-                    // []
-                    // []
-                    if (set) bs.setBrick(current, x, y + 1, x, y, x, y - 1, x, y - 2);
-                    return bs.checkBrick(x, y+1, x, y, x, y-1, x, y-2);
-                }
-                else if (rotation >= 135 && rotation < 225)
-                {
-                    // [][][*][]
-                    if (set) bs.setBrick(current, x - 2, y, x - 1, y, x, y, x + 1, y);
-                    return bs.checkBrick(x-2, y, x-1, y, x, y, x+1, y);
-                }
-                else
-                {
-                    // []
-                    // []
-                    // [*]
-                    // []
-                    if (set) bs.setBrick(current, x, y + 2, x, y + 1, x, y, x, y - 1);
-                    return bs.checkBrick(x, y+2, x, y+1, x, y, x, y-1);
-                }
-                //break;
-            case "J-brick":
-                if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
-                {
-                    // Brick shape:
-                    //  []
-                    //  []
-                    //[][*]
-                    if (set) bs.setBrick(current, x, y + 2, x, y + 1, x, y, x - 1, y);
-                    return bs.checkBrick(x, y+2, x, y+1, x, y, x-1, y);
-                }
-                else if (rotation >= 45 && rotation < 135)
-                {
-                    // []
-                    // [*][][]
-                    if (set) bs.setBrick(current, x, y + 1, x, y, x + 1, y, x + 2, y);
-                    return bs.checkBrick(x, y+1, x, y, x+1, y, x+2, y);
-                }
-                else if (rotation >= 135 && rotation < 225)
-                {
-                    // [*][]
-                    // []
-                    // []
-                    if (set) bs.setBrick(current, x + 1, y, x, y, x, y - 1, x, y - 2);
-                    return bs.checkBrick(x+1, y, x, y, x, y-1, x, y-2);
-                }
-                else
-                {
-                    // [][][*]
-                    //     []
-                    if (set) bs.setBrick(current, x - 2, y, x - 1, y, x, y, x, y - 1);
-                    return bs.checkBrick(x-2, y, x-1, y, x, y, x, y-1);
-                }
-                //break;
-            case "L-brick":
-                if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
-                {
-                    // Brick shape:
-                    //  []
-                    //  []
-                    //  [*][]
-                    if (set) bs.setBrick(current, x, y + 2, x, y + 1, x, y, x + 1, y);
-                    return bs.checkBrick(x, y+2, x, y+1, x, y, x+1, y);
-                }
-                else if (rotation >= 45 && rotation < 135)
-                {
-                    // [*][][]
-                    // []
-                    if (set) bs.setBrick(current, x, y - 1, x, y, x + 1, y, x + 2, y);
-                    return bs.checkBrick(x, y-1, x, y, x+1, y, x+2, y);
-                }
-                else if (rotation >= 135 && rotation < 225)
-                {
-                    // [][*]
-                    //   []
-                    //   []
-                    if (set) bs.setBrick(current, x - 1, y, x, y, x, y - 1, x, y - 2);
-                    return bs.checkBrick(x-1, y, x, y, x, y-1, x, y-2);
-                }
-                else
-                {
-                    //    []
-                    //[][][*]
-                    if (set) bs.setBrick(current, x - 2, y, x - 1, y, x, y, x, y + 1);
-                    return bs.checkBrick(x-2, y, x-1, y, x, y, x, y+1);
-                }
-                //break;
-            case "O-brick":
-                if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
-                {
-                    // Brick shape:
-                    //  [][]
-                    //  [*][]
-                    if (set) bs.setBrick(current, x, y + 1, x + 1, y + 1, x, y, x + 1, y);
-                    return bs.checkBrick(x, y+1, x+1, y+1, x, y, x+1, y);
-                }
-                else if (rotation >= 45 && rotation < 135)
-                {
-                    //  [*][]
-                    //  [][]
-                    if (set) bs.setBrick(current, x, y, x + 1, y, x, y - 1, x + 1, y - 1);
-                    return bs.checkBrick(x, y, x+1, y, x, y-1, x+1, y-1);
-                }
-                else if (rotation >= 135 && rotation < 225)
-                {
-                    //  [][*]
-                    //  [][]
-                    if (set) bs.setBrick(current, x - 1, y, x, y, x - 1, y - 1, x, y - 1);
-                    return bs.checkBrick(x-1, y, x, y, x-1, y-1, x, y-1);
-                }
-                else
-                {
-                    //  [][]
-                    //  [][*]
-                    if (set) bs.setBrick(current, x - 1, y + 1, x, y + 1, x - 1, y, x, y);
-                    return bs.checkBrick(x-1, y+1, x, y+1, x-1, y, x, y);
-                }
-                //break;
-            case "S-brick":
-                if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
-                {
-                    // Brick shape:
-                    //  [][]
-                    //[][*]
-                    if (set) bs.setBrick(current, x - 1, y, x, y, x, y + 1, x + 1, y + 1);
-                    return bs.checkBrick(x-1, y, x, y, x, y+1, x+1, y+1);
-                }
-                else if (rotation >= 45 && rotation < 135)
-                {
-                    // []
-                    // [*][]
-                    //    []
-                    if (set) bs.setBrick(current, x, y + 1, x, y, x + 1, y, x + 1, y - 1);
-                    return bs.checkBrick(x, y+1, x, y, x+1, y, x+1, y-1);
-                }
-                else if (rotation >= 135 && rotation < 225)
-                {
-                    //  [*][]
-                    //[][]
-                    if (set) bs.setBrick(current, x - 1, y - 1, x, y - 1, x, y, x + 1, y);
-                    return bs.checkBrick(x-1, y-1, x, y-1, x, y, x+1, y);
-                }
-                else
-                {
-                    // []
-                    // [][*]
-                    //   []
-                    if (set) bs.setBrick(current, x - 1, y + 1, x - 1, y, x, y, x, y - 1);
-                    return bs.checkBrick(x-1, y+1, x-1, y, x, y, x, y-1);
-                }
-                //break;
-            case "T-brick":
-                if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
-                {
-                    // Brick shape:
-                    //    []
-                    //  [][*][]
-                    if (set) bs.setBrick(current, x - 1, y, x, y, x, y + 1, x + 1, y);
-                    return bs.checkBrick(x-1, y, x, y, x, y+1, x+1, y);
-                }
-                else if (rotation >= 45 && rotation < 135)
-                {
-                    // []
-                    // [*][]
-                    // []
-                    if (set) bs.setBrick(current, x, y + 1, x, y, x + 1, y, x, y - 1);
-                    return bs.checkBrick(x, y+1, x, y, x+1, y, x, y-1);
-                }
-                else if (rotation >= 135 && rotation < 225)
-                {
-                    // [][*][]
-                    //   []
-                    if (set) bs.setBrick(current, x - 1, y, x, y, x, y - 1, x + 1, y);
-                    return bs.checkBrick(x-1, y, x, y, x, y-1, x+1, y);
-                }
-                else
-                {
-                    //   []
-                    // [][*]
-                    //   []
-                    if (set) bs.setBrick(current, x, y + 1, x - 1, y, x, y, x, y - 1);
-                    return bs.checkBrick(x, y+1, x-1, y, x, y, x, y-1);
-                }
-                //break;
-            case "Z-brick":
-                if ((rotation >= 0 && rotation < 45) || (rotation >= 315 && rotation < 360))
-                {
-                    // Brick shape:
-                    //  [][*]
-                    //    [][]
-                    if (set) bs.setBrick(current, x - 1, y, x, y, x, y - 1, x + 1, y - 1);
-                    return bs.checkBrick(x-1, y, x, y, x, y-1, x+1, y-1);
-                }
-                else if (rotation >= 45 && rotation < 135)
-                {
-                    //   []
-                    // [][*]
-                    // []
-                    if (set) bs.setBrick(current, x, y + 1, x, y, x - 1, y, x - 1, y - 1);
-                    return bs.checkBrick(x, y+1, x, y, x-1, y, x-1, y-1);
-                }
-                else if (rotation >= 135 && rotation < 225)
-                {
-                    // [][]
-                    //   [*][]
-                    if (set) bs.setBrick(current, x - 1, y + 1, x, y + 1, x, y, x + 1, y);
-                    return bs.checkBrick(x-1, y+1, x, y+1, x, y, x+1, y);
-                }
-                else
-                {
-                    //    []
-                    // [*][]
-                    // []
-                    if (set) bs.setBrick(current, x + 1, y + 1, x + 1, y, x, y, x, y - 1);
-                    return bs.checkBrick(x+1, y+1, x+1, y, x, y, x, y-1);
-                }
-                //break;
-
-        }
-           
-        // TODO: For each case, find the matrix spots that will be filled
-        // TODO: Display shadow
-        // TODO: Update variable indicating whether it can be placed or not; reference that above
-        // TODO: Left click becomes place at 90 degree snaps if possible, buzz if not.
-
-        return true;
+        //debug.text = "Trying to cast shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString();
+        return checkPiece(current, rotation, x, y, set, true);
     }
 }
