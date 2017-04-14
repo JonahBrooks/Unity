@@ -350,8 +350,9 @@ public class PlayerScript : MonoBehaviour {
     //          y is the position on the game board of the center brick in y
     //          set determines whether the piece should be placed if possible
     //          shadow determines whether the shadow should be displayed for the piece
-    // Returns: true if brick could be placed
-    private bool checkPiece(GameObject brick, float rot, int x, int y, bool set, bool shadow)
+    //          ignoreGold determines if gold blocks should be considered empty
+    // Returns: true if brick could be placed (possibly if gold blocks are cleared, if ignoreGold is true)
+    private bool checkPiece(GameObject brick, float rot, int x, int y, bool set, bool shadow, bool ignoreGold)
     {
         BoardScript bs = (board.GetComponent("BoardScript") as BoardScript);
         switch (brick.tag)
@@ -369,7 +370,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y, x, y, x + 1, y, x + 2, y, shadow);
+                    return bs.checkBrick(x - 1, y, x, y, x + 1, y, x + 2, y, shadow, ignoreGold);
                 }
                 else if (rot >= 45 && rot < 135)
                 {
@@ -384,7 +385,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y + 1, x, y, x, y - 1, x, y - 2, shadow);
+                    return bs.checkBrick(x, y + 1, x, y, x, y - 1, x, y - 2, shadow, ignoreGold);
                 }
                 else if (rot >= 135 && rot < 225)
                 {
@@ -396,7 +397,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 2, y, x - 1, y, x, y, x + 1, y, shadow);
+                    return bs.checkBrick(x - 2, y, x - 1, y, x, y, x + 1, y, shadow, ignoreGold);
                 }
                 else
                 {
@@ -411,7 +412,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y + 2, x, y + 1, x, y, x, y - 1, shadow);
+                    return bs.checkBrick(x, y + 2, x, y + 1, x, y, x, y - 1, shadow, ignoreGold);
                 }
             //break;
             case "J-brick":
@@ -428,7 +429,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y + 2, x, y + 1, x, y, x - 1, y, shadow);
+                    return bs.checkBrick(x, y + 2, x, y + 1, x, y, x - 1, y, shadow, ignoreGold);
                 }
                 else if (rot >= 45 && rot < 135)
                 {
@@ -441,7 +442,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y + 1, x, y, x + 1, y, x + 2, y, shadow);
+                    return bs.checkBrick(x, y + 1, x, y, x + 1, y, x + 2, y, shadow, ignoreGold);
                 }
                 else if (rot >= 135 && rot < 225)
                 {
@@ -455,7 +456,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x + 1, y, x, y, x, y - 1, x, y - 2, shadow);
+                    return bs.checkBrick(x + 1, y, x, y, x, y - 1, x, y - 2, shadow, ignoreGold);
                 }
                 else
                 {
@@ -468,7 +469,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 2, y, x - 1, y, x, y, x, y - 1, shadow);
+                    return bs.checkBrick(x - 2, y, x - 1, y, x, y, x, y - 1, shadow, ignoreGold);
                 }
             //break;
             case "L-brick":
@@ -485,7 +486,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y + 2, x, y + 1, x, y, x + 1, y, shadow);
+                    return bs.checkBrick(x, y + 2, x, y + 1, x, y, x + 1, y, shadow, ignoreGold);
                 }
                 else if (rot >= 45 && rot < 135)
                 {
@@ -498,7 +499,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y - 1, x, y, x + 1, y, x + 2, y, shadow);
+                    return bs.checkBrick(x, y - 1, x, y, x + 1, y, x + 2, y, shadow, ignoreGold);
                 }
                 else if (rot >= 135 && rot < 225)
                 {
@@ -512,7 +513,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y, x, y, x, y - 1, x, y - 2, shadow);
+                    return bs.checkBrick(x - 1, y, x, y, x, y - 1, x, y - 2, shadow, ignoreGold);
                 }
                 else
                 {
@@ -525,7 +526,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 2, y, x - 1, y, x, y, x, y + 1, shadow);
+                    return bs.checkBrick(x - 2, y, x - 1, y, x, y, x, y + 1, shadow, ignoreGold);
                 }
             //break;
             case "O-brick":
@@ -541,7 +542,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y + 1, x + 1, y + 1, x, y, x + 1, y, shadow);
+                    return bs.checkBrick(x, y + 1, x + 1, y + 1, x, y, x + 1, y, shadow, ignoreGold);
                 }
                 else if (rot >= 45 && rot < 135)
                 {
@@ -554,7 +555,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y, x + 1, y, x, y - 1, x + 1, y - 1, shadow);
+                    return bs.checkBrick(x, y, x + 1, y, x, y - 1, x + 1, y - 1, shadow, ignoreGold);
                 }
                 else if (rot >= 135 && rot < 225)
                 {
@@ -567,7 +568,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y, x, y, x - 1, y - 1, x, y - 1, shadow);
+                    return bs.checkBrick(x - 1, y, x, y, x - 1, y - 1, x, y - 1, shadow, ignoreGold);
                 }
                 else
                 {
@@ -580,7 +581,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y + 1, x, y + 1, x - 1, y, x, y, shadow);
+                    return bs.checkBrick(x - 1, y + 1, x, y + 1, x - 1, y, x, y, shadow, ignoreGold);
                 }
             //break;
             case "S-brick":
@@ -596,7 +597,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y, x, y, x, y + 1, x + 1, y + 1, shadow);
+                    return bs.checkBrick(x - 1, y, x, y, x, y + 1, x + 1, y + 1, shadow, ignoreGold);
                 }
                 else if (rot >= 45 && rot < 135)
                 {
@@ -610,7 +611,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y + 1, x, y, x + 1, y, x + 1, y - 1, shadow);
+                    return bs.checkBrick(x, y + 1, x, y, x + 1, y, x + 1, y - 1, shadow, ignoreGold);
                 }
                 else if (rot >= 135 && rot < 225)
                 {
@@ -623,7 +624,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y - 1, x, y - 1, x, y, x + 1, y, shadow);
+                    return bs.checkBrick(x - 1, y - 1, x, y - 1, x, y, x + 1, y, shadow, ignoreGold);
                 }
                 else
                 {
@@ -637,7 +638,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y + 1, x - 1, y, x, y, x, y - 1, shadow);
+                    return bs.checkBrick(x - 1, y + 1, x - 1, y, x, y, x, y - 1, shadow, ignoreGold);
                 }
             //break;
             case "T-brick":
@@ -653,7 +654,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y, x, y, x, y + 1, x + 1, y, shadow);
+                    return bs.checkBrick(x - 1, y, x, y, x, y + 1, x + 1, y, shadow, ignoreGold);
                 }
                 else if (rot >= 45 && rot < 135)
                 {
@@ -667,7 +668,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y + 1, x, y, x + 1, y, x, y - 1, shadow);
+                    return bs.checkBrick(x, y + 1, x, y, x + 1, y, x, y - 1, shadow, ignoreGold);
                 }
                 else if (rot >= 135 && rot < 225)
                 {
@@ -680,7 +681,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y, x, y, x, y - 1, x + 1, y, shadow);
+                    return bs.checkBrick(x - 1, y, x, y, x, y - 1, x + 1, y, shadow, ignoreGold);
                 }
                 else
                 {
@@ -694,7 +695,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y + 1, x - 1, y, x, y, x, y - 1, shadow);
+                    return bs.checkBrick(x, y + 1, x - 1, y, x, y, x, y - 1, shadow, ignoreGold);
                 }
             //break;
             case "Z-brick":
@@ -710,7 +711,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y, x, y, x, y - 1, x + 1, y - 1, shadow);
+                    return bs.checkBrick(x - 1, y, x, y, x, y - 1, x + 1, y - 1, shadow, ignoreGold);
                 }
                 else if (rot >= 45 && rot < 135)
                 {
@@ -724,7 +725,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x, y + 1, x, y, x - 1, y, x - 1, y - 1, shadow);
+                    return bs.checkBrick(x, y + 1, x, y, x - 1, y, x - 1, y - 1, shadow, ignoreGold);
                 }
                 else if (rot >= 135 && rot < 225)
                 {
@@ -737,7 +738,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x - 1, y + 1, x, y + 1, x, y, x + 1, y, shadow);
+                    return bs.checkBrick(x - 1, y + 1, x, y + 1, x, y, x + 1, y, shadow, ignoreGold);
                 }
                 else
                 {
@@ -751,7 +752,7 @@ public class PlayerScript : MonoBehaviour {
                             brickList.Remove(brick);
                         }
                     }
-                    return bs.checkBrick(x + 1, y + 1, x + 1, y, x, y, x, y - 1, shadow);
+                    return bs.checkBrick(x + 1, y + 1, x + 1, y, x, y, x, y - 1, shadow, ignoreGold);
                 }
                 //break;
         }
@@ -793,6 +794,6 @@ public class PlayerScript : MonoBehaviour {
         //debug.text = rotation.ToString();
         // Switch statement on current tag to get piece shape
         //debug.text = "Trying to cast shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString();
-        return checkPiece(current, rotation, x, y, set, true);
+        return checkPiece(current, rotation, x, y, set, true, false);
     }
 }

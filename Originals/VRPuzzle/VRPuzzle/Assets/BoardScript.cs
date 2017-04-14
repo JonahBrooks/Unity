@@ -30,15 +30,20 @@ public class BoardScript : MonoBehaviour {
 
     // Function for checking a single block on the grid for fullness
     // Input: An x,y coordinate from (-gridwidth/2,-gridheigh/2) to (gridwidh/2,gridheight/2)
+    //        ignoreGold determines whether this should return true for gold blocks (used for checking remaining moves)
     // Output: Whether this grid coordinate is empty (true) or not (false)
-    public bool checkGrid(int x, int y)
+    public bool checkGrid(int x, int y, bool ignoreGold = false)
     {
         // NOTE: This excludes 0, which it shouldn't. But this makes it work for some reason.
         if (x < gridMin || y < gridMin || x >= gridwidth || y >= gridheight)
         {
             return false;
         }
-        //Debug.Log(x.ToString() + " " + y.ToString());
+
+        if (ignoreGold)
+        {
+            return board[x, y].tag != "Set" || board[x, y].GetComponent<Renderer>().sharedMaterial == GSh;
+        }
         return board[x, y].tag != "Set";
     }
 
@@ -100,10 +105,12 @@ public class BoardScript : MonoBehaviour {
     // Function for checking an entire piece but not placing it
     // Input: 8 coordinates of 4 blocks in 1 brick
     //          shadow determines if a shadow should be placed on the board
+    //          ignoreGold determines if gold blocks should be considered empty (used for checking remaining moves)
     // Output: True if all blocks can be placed, False is not
-    public bool checkBrick(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, bool shadow = false)
+    public bool checkBrick(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3, bool shadow = false, bool ignoreGold = false)
     {
-        bool isValid = checkGrid(x0, y0) & checkGrid(x1, y1) & checkGrid(x2, y2) & checkGrid(x3, y3);
+        bool isValid = checkGrid(x0, y0,ignoreGold) & checkGrid(x1, y1,ignoreGold) 
+                        & checkGrid(x2, y2,ignoreGold) & checkGrid(x3, y3,ignoreGold);
         //Debug.Log("Casting Shadow!");
         if (shadow == false)
         {
@@ -158,6 +165,7 @@ public class BoardScript : MonoBehaviour {
     // Returns: Whether the block was set or not
     public bool setBrick(GameObject parent, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
     {
+
         if (checkBrick(x0, y0, x1, y1, x2, y2, x3, y3))
         {
             // Turn on blocks if not already on
@@ -233,8 +241,9 @@ public class BoardScript : MonoBehaviour {
                     }
                 }
             }
+            return true;
         }
-        return checkBrick(x0, y0, x1, y1, x2, y2, x3, y3);
+        return false;
     }
 
     // Clears all gold blocks touching the given block, if it is gold
