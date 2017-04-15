@@ -9,12 +9,9 @@ using UnityEngine.UI;
 //  Add offscreen piece indicators
 //  Add intro and outro screens
 //  Add optional play modes based on time vs survival
-//  Detect when no moves are possible
-//      End game in one mode, reset board in time mode
 //  Add special effects when removing gold bricks
 //  Add special effects when placing a brick/generating gold bricks?
 //  Add sound
-//  Create method for rotating pieces in VR
 //  Add board variety
 //      Allow for even sized boards
 //      Allow for boards larger than 11 by 11 (currently can't reach the top edge on larger boards)
@@ -39,6 +36,8 @@ public class PlayerScript : MonoBehaviour {
     public Canvas CHCanvas;
     // Score display
     public Text scoreTxt;
+    // GameOver display
+    public Text gameOverTxt;
     // Prefabs for each brick type
     public GameObject Ibrick;
     public GameObject Jbrick;
@@ -75,6 +74,7 @@ public class PlayerScript : MonoBehaviour {
         yaw = 0;
         mouse1Down = false;
         score = 0;
+        gameOverTxt.text = "";
         Screen.orientation = ScreenOrientation.LandscapeLeft;
         pieceDistance = Vector3.Distance(board.transform.position, Camera.main.transform.position);
         CHCanvas.planeDistance = pieceDistance;
@@ -153,6 +153,11 @@ public class PlayerScript : MonoBehaviour {
                     Destroy(current);
                     // Generate new piece
                     spawnPiece();
+                    // Check remaining moves
+                    if (availableMoves() == false)
+                    {
+                        gameOverTxt.text = "Game Over!";
+                    }
                 }
                 
                 current = null;
@@ -245,7 +250,7 @@ public class PlayerScript : MonoBehaviour {
         }
 
         // For Android:
-        
+
         if (Application.platform == RuntimePlatform.Android && !UnityEngine.VR.VRSettings.enabled)
         {
             Input.gyro.enabled = true;
@@ -255,7 +260,7 @@ public class PlayerScript : MonoBehaviour {
             adjustedAngle = Camera.main.transform.rotation.z;
             if (current != null && Mathf.Abs(adjustedAngle) > 0.1)
             {
-                if(adjustedAngle > 0)
+                if (adjustedAngle > 0)
                 {
                     rotation += androidRotationSpeed;
                     current.transform.Rotate(new Vector3(0, 1, 0), androidRotationSpeed);
@@ -270,12 +275,34 @@ public class PlayerScript : MonoBehaviour {
                     rotation += 360;
                 }
                 rotation = rotation % 360;
-                
+
             }
         }
-        // Keep current block in center of screen
-        if (current != null)
+        else if (Application.platform == RuntimePlatform.Android)
         {
+            adjustedAngle = Camera.main.transform.rotation.z;
+            if (current != null && Mathf.Abs(adjustedAngle) > 0.1)
+            {
+                if (adjustedAngle > 0)
+                {
+                    rotation += androidRotationSpeed;
+                    current.transform.Rotate(new Vector3(0, 1, 0), androidRotationSpeed);
+                }
+                if (adjustedAngle < 0)
+                {
+                    rotation -= androidRotationSpeed;
+                    current.transform.Rotate(new Vector3(0, 1, 0), -androidRotationSpeed);
+                }
+                if (rotation < 0)
+                {
+                    rotation += 360;
+                }
+                rotation = rotation % 360;
+            }
+        }
+            // Keep current block in center of screen
+            if (current != null)
+            {
             current.transform.position = Camera.main.ScreenToWorldPoint(screenCenter);
             // See if piece is above or below board
             if (brickXYZ.y - boardXYZ.y < maxSnapDistance &&
@@ -290,6 +317,34 @@ public class PlayerScript : MonoBehaviour {
         }
 
         scoreTxt.text = "Score: " + score.ToString();
+    }
+
+    // Checks to see if there are any available moves given the pieces and board state
+    // Input: None
+    // Output: True if there is at least one move possible
+    //         False if no moves are available
+    private bool availableMoves()
+    {
+        BoardScript bs = (board.GetComponent("BoardScript") as BoardScript);
+        // Step through all pieces available
+        // Check if that piece can be placed with any rotation at any position
+        foreach ( GameObject piece in brickList)
+        {
+            for (int i = 0; i < bs.gridheight; i++)
+            {
+                for(int j = 0; j < bs.gridwidth; j++)
+                {
+                    for(int rot = 0; rot < 360; rot += 90)
+                    {
+                        if (checkPiece(piece, rot, j, i, false, false, true) == true)
+                            return true;
+                    }
+                }
+            }
+
+        }
+
+        return false;
     }
 
     // Spawns a piece into the world at a random location
@@ -309,7 +364,7 @@ public class PlayerScript : MonoBehaviour {
         pos += Camera.main.transform.position;
         // TODO: Make sure it is not hiden by the board
         
-        Debug.Log("Making piece at " + pos.ToString());
+        //Debug.Log("Making piece at " + pos.ToString());
         switch(rng)
         {
             case 0: // I-brick
@@ -340,6 +395,7 @@ public class PlayerScript : MonoBehaviour {
                 brickList.Add(Object.Instantiate(Lbrick, pos, Quaternion.identity));
                 break;
         }
+
     }
 
 
