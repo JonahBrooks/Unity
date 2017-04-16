@@ -288,7 +288,7 @@ public class PlayerScript : MonoBehaviour {
         }
         else if (Application.platform == RuntimePlatform.Android)
         {
-            adjustedAngle = Camera.main.transform.rotation.z;
+            adjustedAngle = -Camera.main.transform.rotation.z;
             if (current != null && Mathf.Abs(adjustedAngle) > 0.1)
             {
                 if (adjustedAngle > 0)
