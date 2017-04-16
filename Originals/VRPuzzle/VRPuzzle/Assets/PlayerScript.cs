@@ -32,8 +32,6 @@ public class PlayerScript : MonoBehaviour {
     public float maxSnapDistance;
     // Speed of camera when using mouse rotation
     public float cameraSpeed;
-    // Canvas used to hold crosshairs
-    public Canvas CHCanvas;
     // Score display
     public Text scoreTxt;
     // GameOver display
@@ -46,6 +44,8 @@ public class PlayerScript : MonoBehaviour {
     public GameObject Sbrick;
     public GameObject Tbrick;
     public GameObject Zbrick;
+    // Sphere to represent "hands"
+    public GameObject hand;
     // Distance of piece from camera when carried
     private float pieceDistance;
     private float tempPieceDistance;
@@ -77,7 +77,7 @@ public class PlayerScript : MonoBehaviour {
         gameOverTxt.text = "";
         Screen.orientation = ScreenOrientation.LandscapeLeft;
         pieceDistance = Vector3.Distance(board.transform.position, Camera.main.transform.position);
-        CHCanvas.planeDistance = pieceDistance;
+        hand.transform.localPosition = new Vector3 (0,0,pieceDistance);
         brickList = new List<GameObject>();
         spawnPiece();
         spawnPiece();
@@ -136,6 +136,14 @@ public class PlayerScript : MonoBehaviour {
                 // Debug: current.transform.Rotate(new Vector3(1, 0, 0), 90);
                 castShadow();
             }
+        }
+
+        // Clear board on escape key / back button press
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            bs.clearBoard();
+            score = 0;
+            gameOverTxt.text = "";
         }
 
         // Get left click information.

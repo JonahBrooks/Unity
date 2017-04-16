@@ -246,7 +246,7 @@ public class BoardScript : MonoBehaviour {
         return false;
     }
 
-    // Clears all gold blocks touching the given block, if it is gold
+    // Clears all gold blocks if the block at x,y is gold
     // Input: x and y coordinates in board of clicked block
     // Output: score generated, if any
     public int clearIfGold(int x, int y)
@@ -285,6 +285,28 @@ public class BoardScript : MonoBehaviour {
         return score;
     }
 
+
+    // Clears entire board
+    // Input: None
+    // Output: None
+    public void clearBoard()
+    {
+        // Clear all blocks
+        foreach (GameObject block in board)
+        {
+            // Clear block
+            // Change each block to white
+            block.GetComponent<Renderer>().material = WSh;
+            // Make translucent
+            block.GetComponent<Renderer>().material.color = new Color(1, 1, 1, 0);
+            // Disable
+            block.GetComponent<Renderer>().enabled = false;
+            // Unset
+            block.tag = "Unset";
+            // Disable Raycast from hitting this invisible block
+            block.layer = LayerMask.NameToLayer("Ignore Raycast");
+        }
+    }
 
     // Use this for initialization
     void Start () {
