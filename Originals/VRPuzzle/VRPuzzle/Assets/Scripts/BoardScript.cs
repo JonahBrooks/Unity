@@ -20,9 +20,12 @@ public class BoardScript : MonoBehaviour {
     public Material RSh;    // Red Shadow to show impossible placement
     public Material WSh;    // White Shadow for final placed pieces
     public Material GSh;    // Gold Shadow to show complete row or column
+    // Special Effects
+    public GameObject Effect;
 
     // Matrix for storing pieces
     private GameObject[,] board;
+    private GameObject[,] effectBoard;
     private GameObject Block;
     private Material[] materials;
     private int gridMin = 0; // Grid starts at 1
@@ -165,7 +168,6 @@ public class BoardScript : MonoBehaviour {
     // Returns: Whether the block was set or not
     public bool setBrick(GameObject parent, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
     {
-
         if (checkBrick(x0, y0, x1, y1, x2, y2, x3, y3))
         {
             // Turn on blocks if not already on
@@ -253,11 +255,11 @@ public class BoardScript : MonoBehaviour {
     {
         int score = 0;
         int combo = 1;
-        // TODO: Add flashy effects
+
         AudioSource audio = GetComponent<AudioSource>();
 
 
-        audio.Play();
+        
         // Clear all gold blocks
         foreach (GameObject block in board)
         { 
@@ -277,6 +279,8 @@ public class BoardScript : MonoBehaviour {
                 block.layer = LayerMask.NameToLayer("Ignore Raycast");
                 // Increase score by 1 for each block removed before this one
                 score += combo++;
+                audio.Play();
+                block.GetComponentInChildren<ParticleSystem>().Play();
             }
         }
         return score;
@@ -308,6 +312,7 @@ public class BoardScript : MonoBehaviour {
     // Use this for initialization
     void Start () {
         board = new GameObject[gridwidth, gridheight];
+        effectBoard = new GameObject[gridwidth, gridheight];
         Block = BlockTrans.gameObject;
 
         for (int i = 0; i < gridwidth; i++)
@@ -321,6 +326,10 @@ public class BoardScript : MonoBehaviour {
                 board[i, j].layer = LayerMask.NameToLayer("Ignore Raycast");
                 board[i, j].tag = "Unset";
                 board[i, j].GetComponent<Renderer>().enabled = false;
+                effectBoard[i,j] = Instantiate(Effect, new Vector3(i - gridwidth / 2,
+                    groundY - Block.transform.localScale.y,
+                    j - gridheight / 2), Quaternion.identity);
+                effectBoard[i, j].transform.parent = board[i, j].transform;
                 if (debug)
                 {
                     board[i, j].GetComponent<Renderer>().enabled = true;
