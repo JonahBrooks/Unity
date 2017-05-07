@@ -46,6 +46,10 @@ public class PlayerScript : MonoBehaviour {
     public GameObject Zbrick;
     // Sphere to represent "hands"
     public GameObject hand;
+    // For sound and music
+    public AudioSource placeEffect;
+    public AudioSource grabEffect;
+    public AudioSource music;
     // Distance of piece from camera when carried
     private float pieceDistance;
     private float tempPieceDistance;
@@ -76,6 +80,7 @@ public class PlayerScript : MonoBehaviour {
         score = 0;
         gameOverTxt.text = "";
         Screen.orientation = ScreenOrientation.LandscapeLeft;
+        Cursor.lockState = CursorLockMode.Locked;
         pieceDistance = Vector3.Distance(board.transform.position, Camera.main.transform.position);
         hand.transform.localPosition = new Vector3 (0,0,pieceDistance);
         brickList = new List<GameObject>();
@@ -157,6 +162,8 @@ public class PlayerScript : MonoBehaviour {
                     // Piece can be placed
                     // Set piece in board
                     castShadow(true);
+                    // Play sound effect
+                    placeEffect.Play();
                     // Remove piece from game
                     Destroy(current);
                     // Generate new piece
@@ -195,37 +202,33 @@ public class PlayerScript : MonoBehaviour {
                             rotation += 360;
                         }
                         rotation = rotation % 360;
+                        // Play sound effect
+                        grabEffect.Play();
                         //last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
                         castShadow();
                     }
+                    Debug.Log(hit.collider.transform.tag);
                     // If clicked on piece is already set
-                    if(hit.collider.transform.tag == "Set")
+                    if(hit.collider.transform.tag == "Set"
+                       || hit.collider.transform.tag == "Board")
                     {
                         // Calculate the board position on which this block lies.
                         // If board can be somewhere other than origin, transform hit.point first
                         x = Mathf.FloorToInt(hit.point.x) + bs.gridwidth / 2;
                         y = Mathf.FloorToInt(hit.point.z) + bs.gridheight / 2;
                         // Clear row and/or column if they are full
-                        score += bs.clearIfGold(x,y);
+                        score += bs.clearGold();
                     }
                 }
                 
             }
         }
-        if (Input.GetMouseButtonDown(1))
-        {
-            mouse1Down = true;
-        }
-        if(Input.GetMouseButtonUp(1))
-        {
-            mouse1Down = false;
-        }
-        if(mouse1Down)
-        {
-            yaw += cameraSpeed * Input.GetAxis("Mouse X");
-            pitch -= cameraSpeed * Input.GetAxis("Mouse Y");
-            Camera.main.transform.eulerAngles = new Vector3(pitch, yaw, 0);
-        }
+ 
+        // General camera movement with mouse movement
+        yaw += cameraSpeed * Input.GetAxis("Mouse X");
+        pitch -= cameraSpeed * Input.GetAxis("Mouse Y");
+        Camera.main.transform.eulerAngles = new Vector3(pitch, yaw, 0);
+        
         // Get middle click, rotate brick by 90 degree chunks.
         if (Input.GetMouseButtonDown(2))
         {
@@ -353,6 +356,11 @@ public class PlayerScript : MonoBehaviour {
         }
 
         return false;
+    }
+
+    private void OnApplicationFocus(bool focus)
+    {
+        Cursor.lockState = CursorLockMode.Locked;
     }
 
     // Spawns a piece into the world at a random location

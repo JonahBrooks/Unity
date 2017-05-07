@@ -246,40 +246,37 @@ public class BoardScript : MonoBehaviour {
         return false;
     }
 
-    // Clears all gold blocks if the block at x,y is gold
-    // Input: x and y coordinates in board of clicked block
+    // Clears all gold blocks
+    // Input: none
     // Output: score generated, if any
-    public int clearIfGold(int x, int y)
+    public int clearGold()
     {
         int score = 0;
         int combo = 1;
         // TODO: Add flashy effects
+        AudioSource audio = GetComponent<AudioSource>();
 
-        // If block is gold
-        if(    x >= gridMin && x < gridwidth
-            && y >= gridMin && y < gridheight
-            && board[x,y].GetComponent<Renderer>().sharedMaterial == GSh)
-        {
-            // Clear all gold blocks
-            foreach (GameObject block in board)
+
+        audio.Play();
+        // Clear all gold blocks
+        foreach (GameObject block in board)
+        { 
+            // If block is gold
+            if (block.GetComponent<Renderer>().sharedMaterial == GSh)
             {
-                // If block is gold
-                if (block.GetComponent<Renderer>().sharedMaterial == GSh)
-                {
-                    // Clear block
-                    // Change each block to white
-                    block.GetComponent<Renderer>().material = WSh;
-                    // Make translucent
-                    block.GetComponent<Renderer>().material.color = new Color(1, 1, 1, 0);
-                    // Disable
-                    block.GetComponent<Renderer>().enabled = false;
-                    // Unset
-                    block.tag = "Unset";
-                    // Disable Raycast from hitting this invisible block
-                    block.layer = LayerMask.NameToLayer("Ignore Raycast");
-                    // Increase score by 1 for each block removed before this one
-                    score += combo++;
-                }
+                // Clear block
+                // Change each block to white
+                block.GetComponent<Renderer>().material = WSh;
+                // Make translucent
+                block.GetComponent<Renderer>().material.color = new Color(1, 1, 1, 0);
+                // Disable
+                block.GetComponent<Renderer>().enabled = false;
+                // Unset
+                block.tag = "Unset";
+                // Disable Raycast from hitting this invisible block
+                block.layer = LayerMask.NameToLayer("Ignore Raycast");
+                // Increase score by 1 for each block removed before this one
+                score += combo++;
             }
         }
         return score;
