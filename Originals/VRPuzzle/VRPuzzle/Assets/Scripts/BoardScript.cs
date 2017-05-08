@@ -2,12 +2,14 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using Random = UnityEngine.Random;
 
 public class BoardScript : MonoBehaviour {
 
     public int gridwidth;
     public int gridheight;
     public int groundY;
+    public int numJunk;
     public GameObject Ground;
     public GameObject WestWall;
     public GameObject EastWall;
@@ -29,6 +31,7 @@ public class BoardScript : MonoBehaviour {
     private GameObject Block;
     private Material[] materials;
     private int gridMin = 0; // Grid starts at 1
+    private bool blocksBreaking;
     private bool debug = false;
 
     // Function for checking a single block on the grid for fullness
@@ -166,7 +169,7 @@ public class BoardScript : MonoBehaviour {
 
     // Sets all blocks in a brick to true in the board matrix
     // Returns: Whether the block was set or not
-    public bool setBrick(GameObject parent, int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
+    public bool setBrick(int x0, int y0, int x1, int y1, int x2, int y2, int x3, int y3)
     {
         if (checkBrick(x0, y0, x1, y1, x2, y2, x3, y3))
         {
@@ -248,21 +251,22 @@ public class BoardScript : MonoBehaviour {
         return false;
     }
 
-    // Clears all gold blocks
-    // Input: none
-    // Output: score generated, if any
-    public int clearGold()
+    private IEnumerator waitAndAddJunk(int num)
     {
-        int score = 0;
-        int combo = 1;
+        while(blocksBreaking)
+        {
+            yield return new WaitForSeconds(0.01f);
+        }
+        addJunk(num);
+    }
 
+    private IEnumerator slowClearGold()
+    {
         AudioSource audio = GetComponent<AudioSource>();
-
-
-        
+        blocksBreaking = true;
         // Clear all gold blocks
         foreach (GameObject block in board)
-        { 
+        {
             // If block is gold
             if (block.GetComponent<Renderer>().sharedMaterial == GSh)
             {
@@ -278,11 +282,38 @@ public class BoardScript : MonoBehaviour {
                 // Disable Raycast from hitting this invisible block
                 block.layer = LayerMask.NameToLayer("Ignore Raycast");
                 // Increase score by 1 for each block removed before this one
-                score += combo++;
                 audio.Play();
                 block.GetComponentInChildren<ParticleSystem>().Play();
+                yield return new WaitForSeconds(0.01f);
             }
         }
+        blocksBreaking = false;
+    }
+
+    // Clears all gold blocks
+    // Input: none
+    // Output: score generated, if any
+    public int clearGold()
+    {
+        int score = 0;
+        int combo = 1;
+
+
+        // Count up score
+        foreach (GameObject block in board)
+        {
+            // If block is gold
+            if (block.GetComponent<Renderer>().sharedMaterial == GSh)
+            {
+                score += combo++;
+            }
+        }
+
+        // Start slow clear of blocks
+        StartCoroutine(slowClearGold());
+
+        StartCoroutine(waitAndAddJunk((int)Mathf.Log((float)score,2f)));
+
         return score;
     }
 
@@ -307,6 +338,27 @@ public class BoardScript : MonoBehaviour {
             // Disable Raycast from hitting this invisible block
             block.layer = LayerMask.NameToLayer("Ignore Raycast");
         }
+        // Readd new random junk
+        addJunk(numJunk);
+    }
+
+    // Set blocks at random to generate clearable junk on the board
+    public void addJunk(int amount)
+    {
+        int x;
+        int y;
+
+        if (PlayerPrefs.GetInt("Hard") == 1)
+        {
+
+            for (int i = 0; i < amount; i++)
+            {
+                x = Random.Range(gridMin, gridwidth);
+                y = Random.Range(gridMin, gridheight);
+                setBrick(x, y, x, y, x, y, x, y);
+            }
+        
+        }
     }
 
     // Use this for initialization
@@ -314,6 +366,7 @@ public class BoardScript : MonoBehaviour {
         board = new GameObject[gridwidth, gridheight];
         effectBoard = new GameObject[gridwidth, gridheight];
         Block = BlockTrans.gameObject;
+        blocksBreaking = false;
 
         for (int i = 0; i < gridwidth; i++)
         {
@@ -351,6 +404,8 @@ public class BoardScript : MonoBehaviour {
         EastWall.transform.localPosition = new Vector3(0, groundY -1, gridwidth / 2.0f + 0.5f);
         NorthWall.transform.localPosition = new Vector3(-gridwidth / 2.0f - 0.5f, groundY - 1, 0);
         SouthWall.transform.localPosition = new Vector3(gridwidth / 2.0f + 0.5f, groundY - 1, 0);
+        // Generate random junk
+        addJunk(numJunk);
     }
 	
 	// Update is called once per frame

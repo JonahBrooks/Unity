@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 //**********************************************
 //
@@ -30,6 +31,13 @@ public class PlayerScript : MonoBehaviour {
     // Distance at which a piece will snap into place if dropped
     public float snapDistance;
     public float maxSnapDistance;
+    // Min and max angles for spawning pieces
+    public float minTheta;
+    public float maxTheta;
+    public float minPhi;
+    public float maxPhi;
+    // Number of pieces to keep in play
+    public int numPieces;
     // Speed of camera when using mouse rotation
     public float cameraSpeed;
     // Score display
@@ -56,7 +64,6 @@ public class PlayerScript : MonoBehaviour {
     // Rotation of camera
     private float yaw;
     private float pitch;
-    private bool mouse1Down;
     // Player score
     private int score;
 
@@ -76,7 +83,6 @@ public class PlayerScript : MonoBehaviour {
         rotation = 0.0f;
         pitch = 45;
         yaw = 0;
-        mouse1Down = false;
         score = 0;
         gameOverTxt.text = "";
         Screen.orientation = ScreenOrientation.LandscapeLeft;
@@ -84,13 +90,10 @@ public class PlayerScript : MonoBehaviour {
         pieceDistance = Vector3.Distance(board.transform.position, Camera.main.transform.position);
         hand.transform.localPosition = new Vector3 (0,0,pieceDistance);
         brickList = new List<GameObject>();
-        spawnPiece();
-        spawnPiece();
-        spawnPiece();
-        spawnPiece();
-        spawnPiece();
-        spawnPiece();
-        spawnPiece();
+        for(int i = 0; i < numPieces; i++)
+        {
+            spawnPiece();
+        }
     }
 	
 	// Update is called once per frame
@@ -105,9 +108,6 @@ public class PlayerScript : MonoBehaviour {
         Vector3 brickHWL;
         // Camera center vector
         Vector3 screenCenter = new Vector3(Camera.main.pixelWidth / 2, Camera.main.pixelHeight / 2, pieceDistance);
-        // Position in the board matrix of the center piece
-        int x;
-        int y;
         // Holds the rotation around the z axis in -180 to 180 degrees
         float adjustedAngle;
         // Board script
@@ -146,9 +146,10 @@ public class PlayerScript : MonoBehaviour {
         // Clear board on escape key / back button press
         if (Input.GetKeyDown(KeyCode.Escape))
         {
-            bs.clearBoard();
-            score = 0;
-            gameOverTxt.text = "";
+            SceneManager.LoadScene(0);
+            //bs.clearBoard();
+            //score = 0;
+            //gameOverTxt.text = "";
         }
 
         // Get left click information.
@@ -207,15 +208,11 @@ public class PlayerScript : MonoBehaviour {
                         //last = new Vector3(Input.mousePosition.x, 0, Input.mousePosition.y)*mouseSpeed;
                         castShadow();
                     }
-                    Debug.Log(hit.collider.transform.tag);
+                    //Debug.Log(hit.collider.transform.tag);
                     // If clicked on piece is already set
                     if(hit.collider.transform.tag == "Set"
                        || hit.collider.transform.tag == "Board")
                     {
-                        // Calculate the board position on which this block lies.
-                        // If board can be somewhere other than origin, transform hit.point first
-                        x = Mathf.FloorToInt(hit.point.x) + bs.gridwidth / 2;
-                        y = Mathf.FloorToInt(hit.point.z) + bs.gridheight / 2;
                         // Clear row and/or column if they are full
                         score += bs.clearGold();
                     }
@@ -374,8 +371,8 @@ public class PlayerScript : MonoBehaviour {
         pos = new Vector3(0, 0, pieceDistance);
 
         // Rotate about the origin to position randomly
-        pos = Quaternion.AngleAxis(Random.Range(0,360),Vector3.up) * pos;
-        pos = Quaternion.AngleAxis(Random.Range(0, 180), Vector3.left) * pos;
+        pos = Quaternion.AngleAxis(Random.Range(minTheta, maxTheta),Vector3.up) * pos;
+        pos = Quaternion.AngleAxis(Random.Range(minPhi, maxPhi), Vector3.left) * pos;
         // Move into world space
         pos += Camera.main.transform.position;
         // TODO: Make sure it is not hiden by the board
@@ -437,7 +434,7 @@ public class PlayerScript : MonoBehaviour {
                     //Debug.Log("Casting shadow " + hit.point.x.ToString() + " " + hit.point.z.ToString());
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y, x, y, x + 1, y, x + 2, y))
+                        if (bs.setBrick(x - 1, y, x, y, x + 1, y, x + 2, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -452,7 +449,7 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y + 1, x, y, x, y - 1, x, y - 2))
+                        if (bs.setBrick(x, y + 1, x, y, x, y - 1, x, y - 2))
                         {
                             brickList.Remove(brick);
                         }
@@ -464,7 +461,7 @@ public class PlayerScript : MonoBehaviour {
                     // [][][*][]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 2, y, x - 1, y, x, y, x + 1, y))
+                        if (bs.setBrick(x - 2, y, x - 1, y, x, y, x + 1, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -479,7 +476,7 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y + 2, x, y + 1, x, y, x, y - 1))
+                        if (bs.setBrick(x, y + 2, x, y + 1, x, y, x, y - 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -496,7 +493,7 @@ public class PlayerScript : MonoBehaviour {
                     //[][*]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y + 2, x, y + 1, x, y, x - 1, y))
+                        if (bs.setBrick(x, y + 2, x, y + 1, x, y, x - 1, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -509,7 +506,7 @@ public class PlayerScript : MonoBehaviour {
                     // [*][][]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y + 1, x, y, x + 1, y, x + 2, y))
+                        if (bs.setBrick(x, y + 1, x, y, x + 1, y, x + 2, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -523,7 +520,7 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x + 1, y, x, y, x, y - 1, x, y - 2))
+                        if (bs.setBrick(x + 1, y, x, y, x, y - 1, x, y - 2))
                         {
                             brickList.Remove(brick);
                         }
@@ -536,7 +533,7 @@ public class PlayerScript : MonoBehaviour {
                     //     []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 2, y, x - 1, y, x, y, x, y - 1))
+                        if (bs.setBrick(x - 2, y, x - 1, y, x, y, x, y - 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -553,7 +550,7 @@ public class PlayerScript : MonoBehaviour {
                     //  [*][]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y + 2, x, y + 1, x, y, x + 1, y))
+                        if (bs.setBrick(x, y + 2, x, y + 1, x, y, x + 1, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -566,7 +563,7 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y - 1, x, y, x + 1, y, x + 2, y))
+                        if (bs.setBrick(x, y - 1, x, y, x + 1, y, x + 2, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -580,7 +577,7 @@ public class PlayerScript : MonoBehaviour {
                     //   []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y, x, y, x, y - 1, x, y - 2))
+                        if (bs.setBrick(x - 1, y, x, y, x, y - 1, x, y - 2))
                         {
                             brickList.Remove(brick);
                         }
@@ -593,7 +590,7 @@ public class PlayerScript : MonoBehaviour {
                     //[][][*]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 2, y, x - 1, y, x, y, x, y + 1))
+                        if (bs.setBrick(x - 2, y, x - 1, y, x, y, x, y + 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -609,7 +606,7 @@ public class PlayerScript : MonoBehaviour {
                     //  [*][]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y + 1, x + 1, y + 1, x, y, x + 1, y))
+                        if (bs.setBrick(x, y + 1, x + 1, y + 1, x, y, x + 1, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -622,7 +619,7 @@ public class PlayerScript : MonoBehaviour {
                     //  [][]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y, x + 1, y, x, y - 1, x + 1, y - 1))
+                        if (bs.setBrick(x, y, x + 1, y, x, y - 1, x + 1, y - 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -635,7 +632,7 @@ public class PlayerScript : MonoBehaviour {
                     //  [][]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y, x, y, x - 1, y - 1, x, y - 1))
+                        if (bs.setBrick(x - 1, y, x, y, x - 1, y - 1, x, y - 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -648,7 +645,7 @@ public class PlayerScript : MonoBehaviour {
                     //  [][*]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y + 1, x, y + 1, x - 1, y, x, y))
+                        if (bs.setBrick(x - 1, y + 1, x, y + 1, x - 1, y, x, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -664,7 +661,7 @@ public class PlayerScript : MonoBehaviour {
                     //[][*]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y, x, y, x, y + 1, x + 1, y + 1))
+                        if (bs.setBrick(x - 1, y, x, y, x, y + 1, x + 1, y + 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -678,7 +675,7 @@ public class PlayerScript : MonoBehaviour {
                     //    []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y + 1, x, y, x + 1, y, x + 1, y - 1))
+                        if (bs.setBrick(x, y + 1, x, y, x + 1, y, x + 1, y - 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -691,7 +688,7 @@ public class PlayerScript : MonoBehaviour {
                     //[][]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y - 1, x, y - 1, x, y, x + 1, y))
+                        if (bs.setBrick(x - 1, y - 1, x, y - 1, x, y, x + 1, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -705,7 +702,7 @@ public class PlayerScript : MonoBehaviour {
                     //   []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y + 1, x - 1, y, x, y, x, y - 1))
+                        if (bs.setBrick(x - 1, y + 1, x - 1, y, x, y, x, y - 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -721,7 +718,7 @@ public class PlayerScript : MonoBehaviour {
                     //  [][*][]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y, x, y, x, y + 1, x + 1, y))
+                        if (bs.setBrick(x - 1, y, x, y, x, y + 1, x + 1, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -735,7 +732,7 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y + 1, x, y, x + 1, y, x, y - 1))
+                        if (bs.setBrick(x, y + 1, x, y, x + 1, y, x, y - 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -748,7 +745,7 @@ public class PlayerScript : MonoBehaviour {
                     //   []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y, x, y, x, y - 1, x + 1, y))
+                        if (bs.setBrick(x - 1, y, x, y, x, y - 1, x + 1, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -762,7 +759,7 @@ public class PlayerScript : MonoBehaviour {
                     //   []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y + 1, x - 1, y, x, y, x, y - 1))
+                        if (bs.setBrick(x, y + 1, x - 1, y, x, y, x, y - 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -778,7 +775,7 @@ public class PlayerScript : MonoBehaviour {
                     //    [][]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y, x, y, x, y - 1, x + 1, y - 1))
+                        if (bs.setBrick(x - 1, y, x, y, x, y - 1, x + 1, y - 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -792,7 +789,7 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x, y + 1, x, y, x - 1, y, x - 1, y - 1))
+                        if (bs.setBrick(x, y + 1, x, y, x - 1, y, x - 1, y - 1))
                         {
                             brickList.Remove(brick);
                         }
@@ -805,7 +802,7 @@ public class PlayerScript : MonoBehaviour {
                     //   [*][]
                     if (set)
                     {
-                        if (bs.setBrick(brick, x - 1, y + 1, x, y + 1, x, y, x + 1, y))
+                        if (bs.setBrick(x - 1, y + 1, x, y + 1, x, y, x + 1, y))
                         {
                             brickList.Remove(brick);
                         }
@@ -819,7 +816,7 @@ public class PlayerScript : MonoBehaviour {
                     // []
                     if (set)
                     {
-                        if (bs.setBrick(brick, x + 1, y + 1, x + 1, y, x, y, x, y - 1))
+                        if (bs.setBrick(x + 1, y + 1, x + 1, y, x, y, x, y - 1))
                         {
                             brickList.Remove(brick);
                         }
