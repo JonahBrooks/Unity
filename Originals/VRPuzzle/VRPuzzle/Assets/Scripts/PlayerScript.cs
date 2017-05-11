@@ -146,6 +146,7 @@ public class PlayerScript : MonoBehaviour {
         // Clear board on escape key / back button press
         if (Input.GetKeyDown(KeyCode.Escape))
         {
+            Cursor.lockState = CursorLockMode.None;
             SceneManager.LoadScene(0);
             //bs.clearBoard();
             //score = 0;
