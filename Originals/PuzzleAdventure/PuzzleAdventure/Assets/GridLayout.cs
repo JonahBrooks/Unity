@@ -23,6 +23,8 @@ public class GridLayout : MonoBehaviour {
         float slimey = topLeftPos[1];
         Vector3 slimepos;
 
+        PlayerController pc = gameObject.GetComponent<PlayerController>();
+
         slimeWidth = slimes[0].GetComponent<SpriteRenderer>().bounds.size.x;
         slimeHeight = slimes[0].GetComponent<SpriteRenderer>().bounds.size.y;
 
@@ -36,7 +38,7 @@ public class GridLayout : MonoBehaviour {
                 randomIndex = Random.Range(0, slimes.Length);
                 slimex = topLeftPos[0] + j * slimeWidth + j * xpadding;
                 slimepos = new Vector3(slimex, slimey, 0);
-                Instantiate(slimes[randomIndex], slimepos, Quaternion.identity);
+                pc.board[i][j] = Instantiate(slimes[randomIndex], slimepos, Quaternion.identity);
             }
         }
 
@@ -44,7 +46,7 @@ public class GridLayout : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        NewBoard();
+        
 	}
 	
 	// Update is called once per frame
