@@ -13,8 +13,8 @@ public class GridLayout : MonoBehaviour {
     // Position of top left slime
     public float[] topLeftPos = { -4f, 3.5f };
 
-    private float slimeWidth;
-    private float slimeHeight;
+    public float slimeWidth;
+    public float slimeHeight;
 
     public void NewBoard()
     {
@@ -39,6 +39,8 @@ public class GridLayout : MonoBehaviour {
                 slimex = topLeftPos[0] + j * slimeWidth + j * xpadding;
                 slimepos = new Vector3(slimex, slimey, 0);
                 pc.board[i][j] = Instantiate(slimes[randomIndex], slimepos, Quaternion.identity);
+                pc.board[i][j].GetComponent<Coordinates>().x = i;
+                pc.board[i][j].GetComponent<Coordinates>().y = j;
             }
         }
 

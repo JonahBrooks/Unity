@@ -44,19 +44,23 @@ public class PlayerController : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         RaycastHit2D hit;
+        int x;
+        int y;
         if (Input.GetMouseButtonDown(0))
         {
-            ClearAndDrop();
-            Debug.Log("Clicked!");
             hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition),
                                     Vector2.zero, 0f);
             if (hit)
             {
-                Debug.Log("Clicked on " + hit.transform.name);
+                x = hit.transform.GetComponentInParent<Coordinates>().x;
+                y = hit.transform.GetComponentInParent<Coordinates>().y;
+
+                Debug.Log("Clicked on " + x + ", " + y + " at " + hit.transform.position);
             }
         }
     }
 
+ 
     // Find and clear matches of 3, return score generated
     private int Clear3s()
     {
@@ -140,7 +144,6 @@ public class PlayerController : MonoBehaviour {
 
         while(loopAgain)
         {
-            Debug.Log("In ClearAndDrop(), looping...");
             loopAgain = false;
             for(int i = 7; i >=0; i--)
             {
@@ -163,9 +166,11 @@ public class PlayerController : MonoBehaviour {
                             }
                             // Delete this slime
                             Destroy(board[i][j]);
-                            // And replace it with the one above
+                            // And replace it with a copy of the one above
                             board[i][j] = Instantiate(gl.slimes[slimeDict[board[i - 1][j].transform.name]],
                                                         posToReplace, Quaternion.identity);
+                            board[i][j].GetComponent<Coordinates>().x = i;
+                            board[i][j].GetComponent<Coordinates>().y = j;
                             // And set the now empty slime to clear
                             toClear[i - 1][j] = true;
                         }
@@ -176,6 +181,8 @@ public class PlayerController : MonoBehaviour {
                             Destroy(board[i][j]);
                             board[i][j] = Instantiate(gl.slimes[Random.Range(0, gl.slimes.Length)],
                                                         posToReplace, Quaternion.identity);
+                            board[i][j].GetComponent<Coordinates>().x = i;
+                            board[i][j].GetComponent<Coordinates>().y = j;
                             toClear[i][j] = false;
                         }
                     }
