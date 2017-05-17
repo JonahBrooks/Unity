@@ -23,7 +23,7 @@ public class GridLayout : MonoBehaviour {
         float slimey = topLeftPos[1];
         Vector3 slimepos;
 
-        PlayerController pc = gameObject.GetComponent<PlayerController>();
+        PuzzleController pc = gameObject.GetComponent<PuzzleController>();
 
         slimeWidth = slimes[0].GetComponent<SpriteRenderer>().bounds.size.x;
         slimeHeight = slimes[0].GetComponent<SpriteRenderer>().bounds.size.y;
