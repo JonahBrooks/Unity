@@ -54,6 +54,7 @@ public class PuzzleController : MonoBehaviour {
         int cy;
         Vector2 currentPos;
         Vector2 hitPos;
+        GameObject temp;
 
 
         if (Input.GetMouseButtonDown(0))
@@ -84,8 +85,10 @@ public class PuzzleController : MonoBehaviour {
                         StartCoroutine(SlideSlimeTowards(hit.transform.gameObject, currentPos));
                         current.GetComponentInParent<Coordinates>().x = x;
                         current.GetComponentInParent<Coordinates>().y = y;
+                        board[x][y] = current.gameObject;
                         hit.transform.GetComponentInParent<Coordinates>().x = cx;
                         hit.transform.GetComponentInParent<Coordinates>().y = cy;
+                        board[cx][cy] = hit.transform.gameObject;
 
                         Debug.Log(Clear3s());
                     }
