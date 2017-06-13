@@ -7,12 +7,15 @@ public class PuzzleController : MonoBehaviour {
 
     // Stores the grid of gameobjects
     public GameObject[][] board = new GameObject[8][];
+    public bool animationDelay = false;
 
     // Stores for each element in board if it should be cleared
     private bool[][] toClear = new bool[8][];
     // For initializing slimes
     private GridLayout gl;
     private Dictionary<string,int> slimeDict = new Dictionary<string,int>();
+    // For synchronizing the two different coroutines
+    public Object lockObject = new Object();
 
     Transform current = null;
 
@@ -81,8 +84,8 @@ public class PuzzleController : MonoBehaviour {
                         // Clicked on a slime adjacent to current slime
                         currentPos = current.position;
                         hitPos = hit.transform.position;
-                        StartCoroutine(SlideSlimeTowards(current.gameObject, hitPos));
-                        StartCoroutine(SlideSlimeTowards(hit.transform.gameObject, currentPos));
+                        StartCoroutine(SlideSlimeTowards(current.gameObject, hitPos, animationDelay));
+                        StartCoroutine(SlideSlimeTowards(hit.transform.gameObject, currentPos, animationDelay));
                         current.GetComponentInParent<Coordinates>().x = x;
                         current.GetComponentInParent<Coordinates>().y = y;
                         board[x][y] = current.gameObject;
@@ -90,7 +93,7 @@ public class PuzzleController : MonoBehaviour {
                         hit.transform.GetComponentInParent<Coordinates>().y = cy;
                         board[cx][cy] = hit.transform.gameObject;
 
-                        Debug.Log(Clear3s());
+                        Debug.Log(Clear3s(animationDelay));
                     }
                     // Either way, deselect current
                     current.localScale = new Vector2(current.localScale.x / 1.1f, current.localScale.y / 1.1f);
@@ -198,13 +201,16 @@ public class PuzzleController : MonoBehaviour {
     {
         if(delay)
         {
-            // Move the slime a little bit each frame until it's in the right position
-            while (new Vector2(slime.transform.position.x, slime.transform.position.y) != pos)
+            lock(lockObject)
             {
-                slime.transform.position = Vector2.MoveTowards(new Vector2(slime.transform.position.x,
-                                                                           slime.transform.position.y), 
-                                                               pos, 3 * Time.deltaTime);
-                yield return new WaitForFixedUpdate();
+                // Move the slime a little bit each frame until it's in the right position
+                while (new Vector2(slime.transform.position.x, slime.transform.position.y) != pos)
+                {
+                    slime.transform.position = Vector2.MoveTowards(new Vector2(slime.transform.position.x,
+                                                                               slime.transform.position.y), 
+                                                                   pos, 3 * Time.deltaTime);
+                    yield return new WaitForFixedUpdate();
+                }
             }
         }
         else
@@ -228,63 +234,66 @@ public class PuzzleController : MonoBehaviour {
         Vector2 posToReplace;
         Vector2 posToSlide;
         bool loopAgain = true;
-        while(loopAgain)
+        lock(lockObject)
         {
-            loopAgain = false;
-            for(int i = 7; i >=0; i--)
+            while (loopAgain)
             {
-                for(int j = 7; j >=0; j--)
+                loopAgain = false;
+                for(int i = 7; i >=0; i--)
                 {
-                    // Clear this slime
-                    if(toClear[i][j])
+                    for(int j = 7; j >=0; j--)
                     {
-                        //If this is not the top row
-                        if(i > 0)
+                        // Clear this slime
+                        if(toClear[i][j])
                         {
-                            // Drop down the next slime up
-                            toClear[i][j] = toClear[i - 1][j];
-                            //board[i - 1][j].transform.position = board[i][j].transform.position;
-                            posToReplace = board[i-1][j].transform.position;
-                            posToSlide = board[i][j].transform.position;
-                            // Check to see if the next slime up already needed clearing
-                            if (toClear[i - 1][j])
+                            //If this is not the top row
+                            if(i > 0)
                             {
-                                loopAgain = true;
+                                // Drop down the next slime up
+                                toClear[i][j] = toClear[i - 1][j];
+                                //board[i - 1][j].transform.position = board[i][j].transform.position;
+                                posToReplace = board[i-1][j].transform.position;
+                                posToSlide = board[i][j].transform.position;
+                                // Check to see if the next slime up already needed clearing
+                                if (toClear[i - 1][j])
+                                {
+                                    loopAgain = true;
+                                }
+                                // Delete this slime
+                                Destroy(board[i][j]);
+                                // And replace it with a copy of the one above
+                                board[i][j] = Instantiate(gl.slimes[slimeDict[board[i - 1][j].transform.name]],
+                                                            posToReplace, Quaternion.identity);
+                                board[i][j].GetComponent<Coordinates>().x = i;
+                                board[i][j].GetComponent<Coordinates>().y = j;
+                                StartCoroutine(SlideSlimeTowards(board[i][j], posToSlide, delay));
+                                // And set the now empty slime to clear
+                                toClear[i - 1][j] = true;
                             }
-                            // Delete this slime
-                            Destroy(board[i][j]);
-                            // And replace it with a copy of the one above
-                            board[i][j] = Instantiate(gl.slimes[slimeDict[board[i - 1][j].transform.name]],
-                                                        posToReplace, Quaternion.identity);
-                            board[i][j].GetComponent<Coordinates>().x = i;
-                            board[i][j].GetComponent<Coordinates>().y = j;
-                            StartCoroutine(SlideSlimeTowards(board[i][j], posToSlide, delay));
-                            // And set the now empty slime to clear
-                            toClear[i - 1][j] = true;
-                        }
-                        else // If this is the top row
-                        {
-                            // Randomly generate a new slime here
-                            posToReplace = board[i][j].transform.position;
-                            Destroy(board[i][j]);
-                            board[i][j] = Instantiate(gl.slimes[Random.Range(0, gl.slimes.Length)],
-                                                        posToReplace, Quaternion.identity);
-                            board[i][j].GetComponent<Coordinates>().x = i;
-                            board[i][j].GetComponent<Coordinates>().y = j;
-                            toClear[i][j] = false;
+                            else // If this is the top row
+                            {
+                                // Randomly generate a new slime here
+                                posToReplace = board[i][j].transform.position;
+                                Destroy(board[i][j]);
+                                board[i][j] = Instantiate(gl.slimes[Random.Range(0, gl.slimes.Length)],
+                                                            posToReplace, Quaternion.identity);
+                                board[i][j].GetComponent<Coordinates>().x = i;
+                                board[i][j].GetComponent<Coordinates>().y = j;
+                                toClear[i][j] = false;
+                            }
                         }
                     }
                 }
-            }
-            if(delay)
-            {
-                yield return new WaitForSeconds(0.5f);
-            }
-            else
-            {
-                yield return null;
-            }
+                if(delay)
+                {
+                    yield return new WaitForSeconds(0.5f);
+                }
+                else
+                {
+                    yield return null;
+                }
             
+            }
         }
 
     }
