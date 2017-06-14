@@ -7,7 +7,7 @@ public class PuzzleController : MonoBehaviour {
 
     // Stores the grid of gameobjects
     public GameObject[][] board = new GameObject[8][];
-    public bool animationDelay = false;
+    public bool animationDelay = true;
 
     // Stores for each element in board if it should be cleared
     private bool[][] toClear = new bool[8][];
@@ -15,13 +15,19 @@ public class PuzzleController : MonoBehaviour {
     private GridLayout gl;
     private Dictionary<string,int> slimeDict = new Dictionary<string,int>();
     // For synchronizing the two different coroutines
-    public Object lockObject = new Object();
+    private bool swapping;
+    private bool dropping;
+    // For keeping track of player score
+    private int score;
 
     Transform current = null;
 
 
     // Use this for initialization
     void Start () {
+        score = 0;
+        swapping = false;
+        dropping = false;
         gl = gameObject.GetComponent<GridLayout>();
         slimeDict.Add("Blue(Clone)", 0);
         slimeDict.Add("Gray(Clone)", 1);
@@ -41,11 +47,8 @@ public class PuzzleController : MonoBehaviour {
         }
         // Generate new board
         gl.NewBoard();
-        // Start out with no sets of 3 on the board
-        while(Clear3s(false) > 0)
-        {
-            //pass
-        }
+        // Destroy any sets of three on the board at the start
+        Clear3s(false, false);
 	}
 	
 	// Update is called once per frame
@@ -57,57 +60,58 @@ public class PuzzleController : MonoBehaviour {
         int cy;
         Vector2 currentPos;
         Vector2 hitPos;
-        GameObject temp;
 
-
-        if (Input.GetMouseButtonDown(0))
+        Debug.Log("Score: " + score);
+        // Only process main loop if no slimes are in motion
+        if(!swapping && !dropping)
         {
-            hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition),
-                                    Vector2.zero, 0f);
-            if (hit && hit.transform.tag == "Slime")
+            if (Input.GetMouseButtonDown(0))
             {
-                x = hit.transform.GetComponentInParent<Coordinates>().x;
-                y = hit.transform.GetComponentInParent<Coordinates>().y;
-                Debug.Log("Clicked on " + x + ", " + y + " at " + hit.transform.position);
-                if(current == null)
+                hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition),
+                                        Vector2.zero, 0f);
+                if (hit && hit.transform.tag == "Slime")
                 {
-                    current = hit.transform;
-                    current.localScale = new Vector2(current.localScale.x * 1.1f, current.localScale.y * 1.1f);
-                }
-                else if (current != null)
-                {
-                    cx = current.GetComponentInParent<Coordinates>().x;
-                    cy = current.GetComponentInParent<Coordinates>().y;
-
-                    if (x == cx - 1 || x == cx + 1 || y == cy - 1 || y == cy + 1)
+                    x = hit.transform.GetComponentInParent<Coordinates>().x;
+                    y = hit.transform.GetComponentInParent<Coordinates>().y;
+                    if(current == null)
                     {
-                        // Clicked on a slime adjacent to current slime
-                        currentPos = current.position;
-                        hitPos = hit.transform.position;
-                        StartCoroutine(SlideSlimeTowards(current.gameObject, hitPos, animationDelay));
-                        StartCoroutine(SlideSlimeTowards(hit.transform.gameObject, currentPos, animationDelay));
-                        current.GetComponentInParent<Coordinates>().x = x;
-                        current.GetComponentInParent<Coordinates>().y = y;
-                        board[x][y] = current.gameObject;
-                        hit.transform.GetComponentInParent<Coordinates>().x = cx;
-                        hit.transform.GetComponentInParent<Coordinates>().y = cy;
-                        board[cx][cy] = hit.transform.gameObject;
-
-                        Debug.Log(Clear3s(animationDelay));
+                        current = hit.transform;
+                        current.localScale = new Vector2(current.localScale.x * 1.1f, current.localScale.y * 1.1f);
                     }
-                    // Either way, deselect current
-                    current.localScale = new Vector2(current.localScale.x / 1.1f, current.localScale.y / 1.1f);
-                    current = null;
+                    else if (current != null)
+                    {
+                        cx = current.GetComponentInParent<Coordinates>().x;
+                        cy = current.GetComponentInParent<Coordinates>().y;
+
+                        if (x == cx - 1 || x == cx + 1 || y == cy - 1 || y == cy + 1)
+                        {
+                            // Clicked on a slime adjacent to current slime
+                            currentPos = current.position;
+                            hitPos = hit.transform.position;
+                            StartCoroutine(SlideSlimeTowards(current.gameObject, hitPos, animationDelay));
+                            StartCoroutine(SlideSlimeTowards(hit.transform.gameObject, currentPos, animationDelay));
+                            current.GetComponentInParent<Coordinates>().x = x;
+                            current.GetComponentInParent<Coordinates>().y = y;
+                            board[x][y] = current.gameObject;
+                            hit.transform.GetComponentInParent<Coordinates>().x = cx;
+                            hit.transform.GetComponentInParent<Coordinates>().y = cy;
+                            board[cx][cy] = hit.transform.gameObject;
+                            
+                        }
+                        // Either way, deselect current
+                        current.localScale = new Vector2(current.localScale.x / 1.1f, current.localScale.y / 1.1f);
+                        current = null;
                     
-                }
-            } else
-            {
-                // Clicked on something other than a slime
-                // Deselect current
-                if(current != null)
+                    }
+                } else
                 {
-                    current.localScale = new Vector2(current.localScale.x / 1.1f, current.localScale.y / 1.1f);
-                    current = null;
+                    // Clicked on something other than a slime
+                    // Deselect current
+                    if(current != null)
+                    {
+                        current.localScale = new Vector2(current.localScale.x / 1.1f, current.localScale.y / 1.1f);
+                        current = null;
+                    }
                 }
             }
         }
@@ -115,102 +119,121 @@ public class PuzzleController : MonoBehaviour {
 
  
     // Find and clear matches of 3, return score generated
-    private int Clear3s(bool delay = true)
+    // Returns -1 if slimes are in motion
+    private int Clear3s(bool delay = true, bool tallyScore = true)
     {
-        int score = 0;
+        int newScore = 0;
         int numInARow = 1;
         string lastName = "";
 
-        //Check horizontal
-        for(int i = 0; i < 8; i++)
+        // Don't match while slimes are still in motion
+        if(!swapping && !dropping)
         {
-            for(int j =0; j < 8; j++)
+            //Check horizontal
+            for(int i = 0; i < 8; i++)
             {
-                if (lastName == board[i][j].transform.name)
+                for(int j =0; j < 8; j++)
                 {
-                    numInARow++;
+                    if (lastName == board[i][j].transform.name)
+                    {
+                        numInARow++;
+                    }
+                    else
+                    {
+                        numInARow = 1;
+                    }
+                    lastName = board[i][j].transform.name;
+                    if(numInARow >= 3)
+                    {
+                        toClear[i][j - 2] = true;
+                        toClear[i][j - 1] = true;
+                        toClear[i][j] = true;
+                    }
+                }
+                lastName = "";
+                numInARow = 1;
+            }
+            //Check vertical
+            for (int i = 0; i < 8; i++)
+            {
+                for (int j = 0; j < 8; j++)
+                {
+                    if (lastName == board[j][i].transform.name)
+                    {
+                        numInARow++;
+                    }
+                    else
+                    {
+                        numInARow = 1;
+                    }
+                    lastName = board[j][i].transform.name;
+                    if (numInARow >= 3)
+                    {
+                        toClear[j-2][i] = true;
+                        toClear[j-1][i] = true;
+                        toClear[j][i] = true;
+                    }
+                }
+                lastName = "";
+                numInARow = 1;
+            }
+
+            for(int i = 0; i < 8; i++)
+            {
+                for(int j = 0; j < 8; j++)
+                {
+                    if(toClear[i][j])
+                    {
+                        // Award more score the more slimes were matched this move
+                        if(newScore == 0)
+                        {
+                            newScore = 1;
+                        }
+                        newScore += newScore;
+                    }
+                }
+            }
+
+            // Add newScore to player score
+            if(tallyScore)
+            {
+                score += newScore;
+            }
+
+            //  Call ClearAndDrop to clear all toClear slimes and drop new ones
+            if(newScore > 0)
+            {
+                if (delay)
+                {
+                    StartCoroutine(DelayedClearAndDrop(tallyScore));
                 }
                 else
                 {
-                    numInARow = 1;
-                }
-                lastName = board[i][j].transform.name;
-                if(numInARow >= 3)
-                {
-                    toClear[i][j - 2] = true;
-                    toClear[i][j - 1] = true;
-                    toClear[i][j] = true;
+                    StartCoroutine(ClearAndDrop(false,tallyScore));
                 }
             }
-            lastName = "";
-            numInARow = 1;
-        }
-        //Check vertical
-        for (int i = 0; i < 8; i++)
-        {
-            for (int j = 0; j < 8; j++)
-            {
-                if (lastName == board[j][i].transform.name)
-                {
-                    numInARow++;
-                }
-                else
-                {
-                    numInARow = 1;
-                }
-                lastName = board[j][i].transform.name;
-                if (numInARow >= 3)
-                {
-                    toClear[j-2][i] = true;
-                    toClear[j-1][i] = true;
-                    toClear[j][i] = true;
-                }
-            }
-            lastName = "";
-            numInARow = 1;
-        }
-
-        for(int i = 0; i < 8; i++)
-        {
-            for(int j = 0; j < 8; j++)
-            {
-                if(toClear[i][j])
-                {
-                    // Award more score the more slimes were matched this move
-                    score+=score;
-                }
-            }
-        }
-
-        //  Call ClearAndDrop to clear all toClear slimes and drop new ones
-        //ClearAndDrop();
-        if(delay)
-        {
-            StartCoroutine(DelayedClearAndDrop());
+        
+        
+            return newScore;
         }
         else
         {
-            StartCoroutine(ClearAndDrop(false));
+            return -1;
         }
-        
-        
-        return score;
     }
 
     private IEnumerator SlideSlimeTowards(GameObject slime, Vector2 pos, bool delay = true)
     {
+        swapping = true;
         if(delay)
         {
-            lock(lockObject)
+            // Move the slime a little bit each frame until it's in the right position
+            while (new Vector2(slime.transform.position.x, slime.transform.position.y) != pos)
             {
-                // Move the slime a little bit each frame until it's in the right position
-                while (new Vector2(slime.transform.position.x, slime.transform.position.y) != pos)
-                {
-                    slime.transform.position = Vector2.MoveTowards(new Vector2(slime.transform.position.x,
-                                                                               slime.transform.position.y), 
-                                                                   pos, 3 * Time.deltaTime);
-                    yield return new WaitForFixedUpdate();
-                }
+                slime.transform.position = Vector2.MoveTowards(new Vector2(slime.transform.position.x,
+                                                                            slime.transform.position.y), 
+                                                                pos, 3 * Time.deltaTime);
+                yield return new WaitForFixedUpdate();
             }
         }
         else
@@ -218,23 +241,28 @@ public class PuzzleController : MonoBehaviour {
             // No delay, just move the slime
             slime.transform.position = pos;
         }
+        swapping = false;
+        Clear3s(animationDelay);
     }
 
-    private IEnumerator DelayedClearAndDrop()
+    private IEnumerator DelayedClearAndDrop(bool tallyScore = true)
     {
         // Start ClearAndDrop
-        yield return StartCoroutine(ClearAndDrop(true));
+        yield return StartCoroutine(ClearAndDrop(true, tallyScore));
         
     }
 
     //Clears all slimes flagged in toClear and replaces them
-    private IEnumerator ClearAndDrop(bool delay = true)
+    private IEnumerator ClearAndDrop(bool delay = true, bool tallyScore = true)
     {
         
         Vector2 posToReplace;
         Vector2 posToSlide;
         bool loopAgain = true;
-        lock(lockObject)
+
+        dropping = true;
+        // Don't drop slimes while slimes are already in motion
+        if(!swapping)
         {
             while (loopAgain)
             {
@@ -292,10 +320,10 @@ public class PuzzleController : MonoBehaviour {
                 {
                     yield return null;
                 }
-            
             }
         }
-
+        dropping = false;
+        Clear3s(delay,tallyScore);
     }
 
 }
