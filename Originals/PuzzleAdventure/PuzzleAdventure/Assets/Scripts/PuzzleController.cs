@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 using System.Threading;
 
 public class PuzzleController : MonoBehaviour {
@@ -8,17 +10,21 @@ public class PuzzleController : MonoBehaviour {
     // Stores the grid of gameobjects
     public GameObject[][] board = new GameObject[8][];
     public bool animationDelay = true;
+    public Text scoreText;
 
     // Stores for each element in board if it should be cleared
     private bool[][] toClear = new bool[8][];
     // For initializing slimes
     private GridLayout gl;
     private Dictionary<string,int> slimeDict = new Dictionary<string,int>();
-    // For synchronizing the two different coroutines
-    private bool swapping;
-    private bool dropping;
+    // For synchronizing the different coroutines
+    private int swapping;
+    private int dropping;
+    private bool playersTurn;
+    private bool cpuThinking;
     // For keeping track of player score
     private int score;
+    private int cpuScore;
 
     Transform current = null;
 
@@ -26,8 +32,11 @@ public class PuzzleController : MonoBehaviour {
     // Use this for initialization
     void Start () {
         score = 0;
-        swapping = false;
-        dropping = false;
+        cpuScore = 0;
+        swapping = 0;
+        dropping = 0;
+        playersTurn = true;
+        cpuThinking = false;
         gl = gameObject.GetComponent<GridLayout>();
         slimeDict.Add("Blue(Clone)", 0);
         slimeDict.Add("Gray(Clone)", 1);
@@ -51,83 +60,236 @@ public class PuzzleController : MonoBehaviour {
         Clear3s(false, false);
 	}
 	
-	// Update is called once per frame
-	void Update () {
-        RaycastHit2D hit;
-        int x;
-        int y;
-        int cx;
-        int cy;
-        Vector2 currentPos;
-        Vector2 hitPos;
-
-        Debug.Log("Score: " + score);
-        // Only process main loop if no slimes are in motion
-        if(!swapping && !dropping)
+    // Swaps the position of slime One and slime Two if that is a valid swap
+    // Returns true if the swap was valid, false if not
+    bool SwapIfValid(Transform one, Transform two)
+    {
+        int x = two.GetComponentInParent<Coordinates>().x;
+        int y = two.GetComponentInParent<Coordinates>().y;
+        int cx = one.GetComponentInParent<Coordinates>().x;
+        int cy = one.GetComponentInParent<Coordinates>().y;
+        if (x == cx - 1 || x == cx + 1 || y == cy - 1 || y == cy + 1)
         {
-            if (Input.GetMouseButtonDown(0))
-            {
-                hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition),
-                                        Vector2.zero, 0f);
-                if (hit && hit.transform.tag == "Slime")
-                {
-                    x = hit.transform.GetComponentInParent<Coordinates>().x;
-                    y = hit.transform.GetComponentInParent<Coordinates>().y;
-                    if(current == null)
-                    {
-                        current = hit.transform;
-                        current.localScale = new Vector2(current.localScale.x * 1.1f, current.localScale.y * 1.1f);
-                    }
-                    else if (current != null)
-                    {
-                        cx = current.GetComponentInParent<Coordinates>().x;
-                        cy = current.GetComponentInParent<Coordinates>().y;
+            // Clicked on a slime adjacent to current slime
+            StartCoroutine(SlideSlimeTowards(one.gameObject, two.position, animationDelay));
+            StartCoroutine(SlideSlimeTowards(two.gameObject, one.position, animationDelay));
+            one.GetComponentInParent<Coordinates>().x = x;
+            one.GetComponentInParent<Coordinates>().y = y;
+            board[x][y] = one.gameObject;
+            two.GetComponentInParent<Coordinates>().x = cx;
+            two.GetComponentInParent<Coordinates>().y = cy;
+            board[cx][cy] = two.gameObject;
+            // The swap was valid
+            return true;
+        }
+        else
+        {
+            // The swap was invalid
+            return false;
+        }
+    }
 
-                        if (x == cx - 1 || x == cx + 1 || y == cy - 1 || y == cy + 1)
-                        {
-                            // Clicked on a slime adjacent to current slime
-                            currentPos = current.position;
-                            hitPos = hit.transform.position;
-                            StartCoroutine(SlideSlimeTowards(current.gameObject, hitPos, animationDelay));
-                            StartCoroutine(SlideSlimeTowards(hit.transform.gameObject, currentPos, animationDelay));
-                            current.GetComponentInParent<Coordinates>().x = x;
-                            current.GetComponentInParent<Coordinates>().y = y;
-                            board[x][y] = current.gameObject;
-                            hit.transform.GetComponentInParent<Coordinates>().x = cx;
-                            hit.transform.GetComponentInParent<Coordinates>().y = cy;
-                            board[cx][cy] = hit.transform.gameObject;
-                            
-                        }
-                        // Either way, deselect current
-                        current.localScale = new Vector2(current.localScale.x / 1.1f, current.localScale.y / 1.1f);
-                        current = null;
-                    
-                    }
-                } else
+    // Update is called once per frame
+    void Update () {
+        RaycastHit2D hit;
+        //Debug.Log("Score: " + score);
+        
+        // Only process main loop if no slimes are in motion
+        if(swapping == 0 && dropping == 0)
+        {
+            // Process CPU's turn
+            if(!playersTurn)
+            {
+                // Don't enter this coroutine if it is already running
+                if(!cpuThinking)
                 {
-                    // Clicked on something other than a slime
-                    // Deselect current
-                    if(current != null)
+                    StartCoroutine(CPUTurn());
+                }
+            }
+            else // Process player's turn
+            {
+                if (Input.GetMouseButtonDown(0))
+                {
+                    hit = Physics2D.Raycast(Camera.main.ScreenToWorldPoint(Input.mousePosition),
+                                            Vector2.zero, 0f);
+                    if (hit && hit.transform.tag == "Slime")
                     {
-                        current.localScale = new Vector2(current.localScale.x / 1.1f, current.localScale.y / 1.1f);
-                        current = null;
+                        if(current == null)
+                        {
+                            current = hit.transform;
+                            current.localScale = new Vector2(current.localScale.x * 1.1f, current.localScale.y * 1.1f);
+                        }
+                        else if (current != null)
+                        {
+                            if(SwapIfValid(current, hit.transform))
+                            {
+                                // Player's turn ends on a valid swap
+                                playersTurn = false;
+                            }
+                            // Either way, deselect current
+                            current.localScale = new Vector2(current.localScale.x / 1.1f, current.localScale.y / 1.1f);
+                            current = null;
+                        }
+                    } else
+                    {
+                        // Clicked on something other than a slime
+                        // Deselect current
+                        if(current != null)
+                        {
+                            current.localScale = new Vector2(current.localScale.x / 1.1f, current.localScale.y / 1.1f);
+                            current = null;
+                        }
                     }
                 }
             }
         }
+        scoreText.text = "Player Score: " + score + "\tEnemy Score: " + cpuScore;
+        if(score > 1000)
+        {
+            //SceneManager.LoadScene("Adventure");
+        }
+    }
+
+
+    // Coroutine for processing the CPU's turn
+    private IEnumerator CPUTurn()
+    {
+        int numMoves = 8; // Number of possible moves from each location
+
+        int tmpScore = 0;
+        int highScore = 0;
+
+        int[] swap1 = new int[2];
+        int[] swap2 = new int[2];
+        int[] tmpSwap1 = new int[2];
+        int[] tmpSwap2 = new int[2];
+
+        GameObject tmp;
+
+        cpuThinking = true;
+        // Pause before making move
+        yield return new WaitForSeconds(1f);
+        // Find best move to make
+        // Make swap in board, simulate Clear3s, swap again to undo
+        for (int i = 0; i < 8; i++)
+        {
+            for (int j = 0; j < 8; j++)
+            {
+                // Set tmpSwap1 to current slime at i,j
+                tmpSwap1[0] = i;
+                tmpSwap1[1] = j;
+                for(int k = 0; k < numMoves; k++)
+                {
+                    // Set tmpSwap2 to slime corresponding to move number k
+                    switch (k)
+                    {
+                        case 0:
+                            // [*][ ][ ]
+                            // [ ][ ][ ]
+                            // [ ][ ][ ]
+                            tmpSwap2[0] = i - 1;
+                            tmpSwap2[1] = j - 1;
+                            break;
+                        case 1:
+                            // [ ][*][ ]
+                            // [ ][ ][ ]
+                            // [ ][ ][ ]
+                            tmpSwap2[0] = i - 1;
+                            tmpSwap2[1] = j;
+                            break;
+                        case 2:
+                            // [ ][ ][*]
+                            // [ ][ ][ ]
+                            // [ ][ ][ ]
+                            tmpSwap2[0] = i - 1;
+                            tmpSwap2[1] = j + 1;
+                            break;
+                        case 3:
+                            // [ ][ ][ ]
+                            // [*][ ][ ]
+                            // [ ][ ][ ]
+                            tmpSwap2[0] = i;
+                            tmpSwap2[1] = j - 1;
+                            break;
+                        case 4:
+                            // [ ][ ][ ]
+                            // [ ][ ][*]
+                            // [ ][ ][ ]
+                            tmpSwap2[0] = i;
+                            tmpSwap2[1] = j + 1;
+                            break;
+                        case 5:
+                            // [ ][ ][ ]
+                            // [ ][ ][ ]
+                            // [*][ ][ ]
+                            tmpSwap2[0] = i + 1;
+                            tmpSwap2[1] = j - 1;
+                            break;
+                        case 6:
+                            // [ ][ ][ ]
+                            // [ ][ ][ ]
+                            // [ ][*][ ]
+                            tmpSwap2[0] = i + 1;
+                            tmpSwap2[1] = j;
+                            break;
+                        case 7:
+                            // [ ][ ][ ]
+                            // [ ][ ][ ]
+                            // [ ][ ][*]
+                            tmpSwap2[0] = i + 1;
+                            tmpSwap2[1] = j + 1;
+                            break;
+                    }
+
+                    // If move is valid
+                    if(tmpSwap2[0] >= 0 && tmpSwap2[0] < 8 && tmpSwap2[1] >= 0 && tmpSwap2[1] < 8)
+                    {
+                        // Make swap in board
+                        tmp = board[i][j];
+                        board[i][j] = board[tmpSwap2[0]][tmpSwap2[1]];
+                        board[tmpSwap2[0]][tmpSwap2[1]] = tmp;
+
+                        // Get score that would be generated
+                        tmpScore = Clear3s(false, false, true);
+                        // Store score and swaps if this is the best so far
+                        if (tmpScore > highScore)
+                        {
+                            highScore = tmpScore;
+                            swap1[0] = tmpSwap1[0];
+                            swap1[1] = tmpSwap1[1];
+                            swap2[0] = tmpSwap2[0];
+                            swap2[1] = tmpSwap2[1];
+                        }
+
+                        // Undo swap in board
+                        tmp = board[i][j];
+                        board[i][j] = board[tmpSwap2[0]][tmpSwap2[1]];
+                        board[tmpSwap2[0]][tmpSwap2[1]] = tmp;
+                    }
+                }
+            }
+        }
+        // Make move (which calls Clear3s and tallies score for CPU
+        SwapIfValid(board[swap1[0]][swap1[1]].transform, board[swap2[0]][swap2[1]].transform);
+        playersTurn = true;
+        cpuThinking = false;
+        yield return null;
     }
 
  
     // Find and clear matches of 3, return score generated
-    // Returns -1 if slimes are in motion
-    private int Clear3s(bool delay = true, bool tallyScore = true)
+    // delay indicates whether there should be a time delay during the dropping after matching
+    // tallyScore indicates whether the new score generated should be added to score
+    // simulate indicates whether this should impact toClear or not
+    // Returns -1 if slimes are in motion and thus can't be matched right now
+    private int Clear3s(bool delay = true, bool tallyScore = true, bool simulate = false)
     {
         int newScore = 0;
         int numInARow = 1;
         string lastName = "";
 
         // Don't match while slimes are still in motion
-        if(!swapping && !dropping)
+        if(swapping == 0 && dropping == 0)
         {
             //Check horizontal
             for(int i = 0; i < 8; i++)
@@ -197,22 +359,34 @@ public class PuzzleController : MonoBehaviour {
             // Add newScore to player score
             if(tallyScore)
             {
-                score += newScore;
-            }
-
-            //  Call ClearAndDrop to clear all toClear slimes and drop new ones
-            if(newScore > 0)
-            {
-                if (delay)
+                // Score is tallied at the end of a turn, so the logic is reveresed here due to coroutine times
+                if (!playersTurn)
                 {
-                    StartCoroutine(DelayedClearAndDrop(tallyScore));
+                    score += newScore;
                 }
                 else
                 {
-                    StartCoroutine(ClearAndDrop(false,tallyScore));
+                    cpuScore += newScore;
                 }
             }
+
+            //  Call ClearAndDrop to clear all toClear slimes and drop new ones
+            if(newScore > 0 && !simulate)
+            {
+                StartCoroutine(ClearAndDrop(delay,tallyScore));
+            }
         
+            if(simulate)
+            {
+                for( int i = 0; i < 8; i++)
+                {
+                    for( int j = 0; j < 8; j++)
+                    {
+                        toClear[i][j] = false;
+                    }
+                }
+            }
+
         
             return newScore;
         }
@@ -222,9 +396,10 @@ public class PuzzleController : MonoBehaviour {
         }
     }
 
+    // Slowly move one slime toward a given location (if delay = true, otherwise move it immediately)
     private IEnumerator SlideSlimeTowards(GameObject slime, Vector2 pos, bool delay = true)
     {
-        swapping = true;
+        swapping++;
         if(delay)
         {
             // Move the slime a little bit each frame until it's in the right position
@@ -241,15 +416,8 @@ public class PuzzleController : MonoBehaviour {
             // No delay, just move the slime
             slime.transform.position = pos;
         }
-        swapping = false;
-        Clear3s(animationDelay);
-    }
-
-    private IEnumerator DelayedClearAndDrop(bool tallyScore = true)
-    {
-        // Start ClearAndDrop
-        yield return StartCoroutine(ClearAndDrop(true, tallyScore));
-        
+        swapping--;
+        Clear3s(delay);
     }
 
     //Clears all slimes flagged in toClear and replaces them
@@ -260,9 +428,9 @@ public class PuzzleController : MonoBehaviour {
         Vector2 posToSlide;
         bool loopAgain = true;
 
-        dropping = true;
+        dropping++;
         // Don't drop slimes while slimes are already in motion
-        if(!swapping)
+        if(swapping == 0)
         {
             while (loopAgain)
             {
@@ -304,7 +472,9 @@ public class PuzzleController : MonoBehaviour {
                                 posToReplace = board[i][j].transform.position;
                                 Destroy(board[i][j]);
                                 board[i][j] = Instantiate(gl.slimes[Random.Range(0, gl.slimes.Length)],
-                                                            posToReplace, Quaternion.identity);
+                                                            new Vector2(posToReplace.x, posToReplace.y + gl.slimeHeight + gl.ypadding), 
+                                                            Quaternion.identity);
+                                StartCoroutine(SlideSlimeTowards(board[i][j], posToReplace, delay));
                                 board[i][j].GetComponent<Coordinates>().x = i;
                                 board[i][j].GetComponent<Coordinates>().y = j;
                                 toClear[i][j] = false;
@@ -322,7 +492,7 @@ public class PuzzleController : MonoBehaviour {
                 }
             }
         }
-        dropping = false;
+        dropping--;
         Clear3s(delay,tallyScore);
     }
 

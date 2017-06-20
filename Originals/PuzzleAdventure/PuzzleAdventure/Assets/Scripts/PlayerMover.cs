@@ -26,6 +26,8 @@ public class PlayerMover : MonoBehaviour {
             // Launch puzzle game
             Debug.Log("Launching Puzzle");
             SceneManager.LoadScene("Puzzle");
+            Debug.Log("Back from puzzle!");
+            Destroy(collision.gameObject);
         }
     }
 
