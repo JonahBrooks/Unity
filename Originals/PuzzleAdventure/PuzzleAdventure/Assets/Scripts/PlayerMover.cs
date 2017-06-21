@@ -72,7 +72,7 @@ public class PlayerMover : MonoBehaviour {
         if (victory)
         {
             // Load win screen
-            Debug.Log("Victory!");
+            SceneManager.LoadScene("Victory");
         }
     }
 

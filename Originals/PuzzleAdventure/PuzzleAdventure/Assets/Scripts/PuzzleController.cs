@@ -136,7 +136,7 @@ public class PuzzleController : MonoBehaviour {
         }
         else if (PuzzleController.playerHealth <= 0)
         {
-            scoreText.text = "Game Over";
+            SceneManager.LoadScene("GameOver");
         }
     }
 
