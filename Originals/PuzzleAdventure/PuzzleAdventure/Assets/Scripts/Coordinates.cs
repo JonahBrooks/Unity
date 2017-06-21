@@ -6,6 +6,8 @@ public class Coordinates : MonoBehaviour {
 
     public int x;
     public int y;
+    public bool active;
+    public Vector2 coord;
 
 	// Use this for initialization
 	void Start () {

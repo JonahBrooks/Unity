@@ -7,14 +7,54 @@ public class PlayerMover : MonoBehaviour {
 
     public float speed = 2f;
     public float maxSpeed = 2f;
+    public GameObject[] slimePrefabs;
+    
 
     private Animator anim;
     private Rigidbody2D rb2d;
 
+    private GameObject[] slimes;
+    private Dictionary<string, int> nameToIndex = new Dictionary<string, int>();
+
+    private static bool firstRun = true;
+    private static Vector2 coord;
+
 	// Use this for initialization
 	void Start () {
-        anim = gameObject.GetComponent<Animator>();
+        Vector3 tmpLoc;
+
         rb2d = gameObject.GetComponent<Rigidbody2D>();
+        anim = gameObject.GetComponent<Animator>();
+
+        if(PlayerMover.firstRun)
+        {
+            PlayerMover.firstRun = false;
+            for (int i = 0; i < slimePrefabs.Length; i++)
+            {
+                tmpLoc = new Vector3(Random.Range(0, Screen.width), Random.Range(0, Screen.height), 0f);
+                slimePrefabs[i].GetComponent<Coordinates>().coord = Camera.main.ScreenToWorldPoint(tmpLoc);
+                slimePrefabs[i].GetComponent<Coordinates>().active = true;
+            }
+        }
+        
+        nameToIndex.Add("BlueOverworld(Clone)", 0);
+        nameToIndex.Add("GrayOverworld(Clone)", 1);
+        nameToIndex.Add("GreenOverworld(Clone)", 2);
+        nameToIndex.Add("PurpleOverworld(Clone)", 3);
+        nameToIndex.Add("RedOverworld(Clone)", 4);
+        nameToIndex.Add("YellowOverworld(Clone)", 5);
+
+        for (int i = 0; i < slimePrefabs.Length; i++)
+        {
+            if (slimePrefabs[i].GetComponent<Coordinates>().active)
+            {
+                Instantiate(slimePrefabs[i],
+                            slimePrefabs[i].GetComponent<Coordinates>().coord,
+                            Quaternion.identity);
+            }
+        }
+
+        gameObject.transform.position = PlayerMover.coord;
     }
 
 
@@ -24,9 +64,9 @@ public class PlayerMover : MonoBehaviour {
         if(collision.tag == "Slime")
         {
             // Launch puzzle game
-            Debug.Log("Launching Puzzle");
+            PlayerMover.coord = gameObject.transform.position;
             SceneManager.LoadScene("Puzzle");
-            Debug.Log("Back from puzzle!");
+            slimePrefabs[nameToIndex[collision.name]].GetComponent<Coordinates>().active = false;
             Destroy(collision.gameObject);
         }
     }
@@ -39,7 +79,8 @@ public class PlayerMover : MonoBehaviour {
 
         hori = Input.GetAxis("Horizontal");
         vert = Input.GetAxis("Vertical");
-        
+
+
         // Adjust sprite for horizontal movement
         if (hori < -epsi)
         {

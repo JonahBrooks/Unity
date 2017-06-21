@@ -92,7 +92,6 @@ public class PuzzleController : MonoBehaviour {
     // Update is called once per frame
     void Update () {
         RaycastHit2D hit;
-        //Debug.Log("Score: " + score);
         
         // Only process main loop if no slimes are in motion
         if(swapping == 0 && dropping == 0)
@@ -144,9 +143,9 @@ public class PuzzleController : MonoBehaviour {
             }
         }
         scoreText.text = "Player Score: " + score + "\tEnemy Score: " + cpuScore;
-        if(score > 1000)
+        if(score > 10)
         {
-            //SceneManager.LoadScene("Adventure");
+            SceneManager.LoadScene("Adventure");
         }
     }
 
@@ -347,11 +346,7 @@ public class PuzzleController : MonoBehaviour {
                     if(toClear[i][j])
                     {
                         // Award more score the more slimes were matched this move
-                        if(newScore == 0)
-                        {
-                            newScore = 1;
-                        }
-                        newScore += newScore;
+                        newScore++; ;
                     }
                 }
             }
