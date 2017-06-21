@@ -18,6 +18,8 @@ public class PlayerMover : MonoBehaviour {
 
     private static bool firstRun = true;
     private static Vector2 coord;
+    private static Vector2[] slimeCoords;
+    private static bool[] slimeActives;
 
 	// Use this for initialization
 	void Start () {
@@ -29,11 +31,13 @@ public class PlayerMover : MonoBehaviour {
         if(PlayerMover.firstRun)
         {
             PlayerMover.firstRun = false;
+            PlayerMover.slimeCoords = new Vector2[slimePrefabs.Length];
+            PlayerMover.slimeActives = new bool[slimePrefabs.Length];
             for (int i = 0; i < slimePrefabs.Length; i++)
             {
                 tmpLoc = new Vector3(Random.Range(0, Screen.width), Random.Range(0, Screen.height), 0f);
-                slimePrefabs[i].GetComponent<Coordinates>().coord = Camera.main.ScreenToWorldPoint(tmpLoc);
-                slimePrefabs[i].GetComponent<Coordinates>().active = true;
+                PlayerMover.slimeCoords[i] = Camera.main.ScreenToWorldPoint(tmpLoc);
+                PlayerMover.slimeActives[i]= true;
             }
         }
         
@@ -46,15 +50,30 @@ public class PlayerMover : MonoBehaviour {
 
         for (int i = 0; i < slimePrefabs.Length; i++)
         {
-            if (slimePrefabs[i].GetComponent<Coordinates>().active)
+            if (PlayerMover.slimeActives[i])
             {
                 Instantiate(slimePrefabs[i],
-                            slimePrefabs[i].GetComponent<Coordinates>().coord,
+                            PlayerMover.slimeCoords[i],
                             Quaternion.identity);
             }
         }
 
         gameObject.transform.position = PlayerMover.coord;
+
+        // Check for victory condition
+        bool victory = true;
+        for (int i = 0; i < slimePrefabs.Length; i++)
+        {
+            if (PlayerMover.slimeActives[i])
+            {
+                victory = false;
+            }
+        }
+        if (victory)
+        {
+            // Load win screen
+            Debug.Log("Victory!");
+        }
     }
 
 
@@ -65,9 +84,9 @@ public class PlayerMover : MonoBehaviour {
         {
             // Launch puzzle game
             PlayerMover.coord = gameObject.transform.position;
-            SceneManager.LoadScene("Puzzle");
-            slimePrefabs[nameToIndex[collision.name]].GetComponent<Coordinates>().active = false;
+            PlayerMover.slimeActives[nameToIndex[collision.name]] = false;
             Destroy(collision.gameObject);
+            SceneManager.LoadScene("Puzzle");
         }
     }
 
@@ -79,6 +98,9 @@ public class PlayerMover : MonoBehaviour {
 
         hori = Input.GetAxis("Horizontal");
         vert = Input.GetAxis("Vertical");
+
+ 
+
 
 
         // Adjust sprite for horizontal movement

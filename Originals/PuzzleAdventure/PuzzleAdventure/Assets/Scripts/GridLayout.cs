@@ -26,7 +26,7 @@ public class GridLayout : MonoBehaviour {
         PuzzleController pc = gameObject.GetComponent<PuzzleController>();
 
         slimeWidth = slimes[0].GetComponent<SpriteRenderer>().bounds.size.x;
-        slimeHeight = slimes[0].GetComponent<SpriteRenderer>().bounds.size.y;
+        slimeHeight= slimes[0].GetComponent<SpriteRenderer>().bounds.size.y;
 
         // Instantiate 64 slimes in a grid of 8 by 8
         for (int i = 0; i < 8; i++)

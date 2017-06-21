@@ -11,6 +11,8 @@ public class PuzzleController : MonoBehaviour {
     public GameObject[][] board = new GameObject[8][];
     public bool animationDelay = true;
     public Text scoreText;
+    public int maxHealth;
+    public int slimeMaxHealth;
 
     // Stores for each element in board if it should be cleared
     private bool[][] toClear = new bool[8][];
@@ -25,14 +27,25 @@ public class PuzzleController : MonoBehaviour {
     // For keeping track of player score
     private int score;
     private int cpuScore;
+    private int slimeHealth;
+    private static int playerHealth;
+    private static bool firstRun = true;
 
     Transform current = null;
 
 
     // Use this for initialization
     void Start () {
+
+        if(PuzzleController.firstRun)
+        {
+            PuzzleController.firstRun = false;
+            PuzzleController.playerHealth = maxHealth;
+        }
+
         score = 0;
         cpuScore = 0;
+        slimeHealth = slimeMaxHealth;
         swapping = 0;
         dropping = 0;
         playersTurn = true;
@@ -60,42 +73,16 @@ public class PuzzleController : MonoBehaviour {
         Clear3s(false, false);
 	}
 	
-    // Swaps the position of slime One and slime Two if that is a valid swap
-    // Returns true if the swap was valid, false if not
-    bool SwapIfValid(Transform one, Transform two)
-    {
-        int x = two.GetComponentInParent<Coordinates>().x;
-        int y = two.GetComponentInParent<Coordinates>().y;
-        int cx = one.GetComponentInParent<Coordinates>().x;
-        int cy = one.GetComponentInParent<Coordinates>().y;
-        if (x == cx - 1 || x == cx + 1 || y == cy - 1 || y == cy + 1)
-        {
-            // Clicked on a slime adjacent to current slime
-            StartCoroutine(SlideSlimeTowards(one.gameObject, two.position, animationDelay));
-            StartCoroutine(SlideSlimeTowards(two.gameObject, one.position, animationDelay));
-            one.GetComponentInParent<Coordinates>().x = x;
-            one.GetComponentInParent<Coordinates>().y = y;
-            board[x][y] = one.gameObject;
-            two.GetComponentInParent<Coordinates>().x = cx;
-            two.GetComponentInParent<Coordinates>().y = cy;
-            board[cx][cy] = two.gameObject;
-            // The swap was valid
-            return true;
-        }
-        else
-        {
-            // The swap was invalid
-            return false;
-        }
-    }
 
     // Update is called once per frame
     void Update () {
         RaycastHit2D hit;
         
+
         // Only process main loop if no slimes are in motion
         if(swapping == 0 && dropping == 0)
         {
+
             // Process CPU's turn
             if(!playersTurn)
             {
@@ -142,10 +129,14 @@ public class PuzzleController : MonoBehaviour {
                 }
             }
         }
-        scoreText.text = "Player Score: " + score + "\tEnemy Score: " + cpuScore;
-        if(score > 10)
+        scoreText.text = "Player Health: " + PuzzleController.playerHealth + "\t\tEnemy Health: " + slimeHealth;
+        if(slimeHealth <= 0)
         {
             SceneManager.LoadScene("Adventure");
+        }
+        else if (PuzzleController.playerHealth <= 0)
+        {
+            scoreText.text = "Game Over";
         }
     }
 
@@ -345,7 +336,7 @@ public class PuzzleController : MonoBehaviour {
                 {
                     if(toClear[i][j])
                     {
-                        // Award more score the more slimes were matched this move
+                        // Award 1 point for each slime matched this turn
                         newScore++; ;
                     }
                 }
@@ -358,10 +349,12 @@ public class PuzzleController : MonoBehaviour {
                 if (!playersTurn)
                 {
                     score += newScore;
+                    slimeHealth -= newScore;
                 }
                 else
                 {
                     cpuScore += newScore;
+                    PuzzleController.playerHealth -= newScore;
                 }
             }
 
@@ -388,6 +381,39 @@ public class PuzzleController : MonoBehaviour {
         else
         {
             return -1;
+        }
+    }
+
+    // Swaps the position of slime One and slime Two if that is a valid swap
+    // Returns true if the swap was valid, false if not
+    bool SwapIfValid(Transform one, Transform two)
+    {
+        int x = two.GetComponentInParent<Coordinates>().x;
+        int y = two.GetComponentInParent<Coordinates>().y;
+        int cx = one.GetComponentInParent<Coordinates>().x;
+        int cy = one.GetComponentInParent<Coordinates>().y;
+        Vector2 pos1;
+        Vector2 pos2;
+        if (x == cx - 1 || x == cx + 1 || y == cy - 1 || y == cy + 1)
+        {
+            // Clicked on a slime adjacent to current slime
+            pos1 = one.position;
+            pos2 = two.position;
+            StartCoroutine(SlideSlimeTowards(one.gameObject, pos2, animationDelay));
+            StartCoroutine(SlideSlimeTowards(two.gameObject, pos1, animationDelay));
+            one.GetComponentInParent<Coordinates>().x = x;
+            one.GetComponentInParent<Coordinates>().y = y;
+            board[x][y] = one.gameObject;
+            two.GetComponentInParent<Coordinates>().x = cx;
+            two.GetComponentInParent<Coordinates>().y = cy;
+            board[cx][cy] = two.gameObject;
+            // The swap was valid
+            return true;
+        }
+        else
+        {
+            // The swap was invalid
+            return false;
         }
     }
 
