@@ -8,6 +8,8 @@ public class PlayerMover : MonoBehaviour {
     public float speed = 2f;
     public float maxSpeed = 2f;
     public GameObject[] slimePrefabs;
+    public GameObject[] bushPrefabs;
+    public int numBushes;
     
 
     private Animator anim;
@@ -21,6 +23,14 @@ public class PlayerMover : MonoBehaviour {
     private static Vector2[] slimeCoords;
     private static bool[] slimeActives;
 
+    private struct Bush
+    {
+        public Vector2 coord;
+        public int type;
+    }
+
+    private static Bush[] bushes;
+
 	// Use this for initialization
 	void Start () {
         Vector3 tmpLoc;
@@ -28,16 +38,36 @@ public class PlayerMover : MonoBehaviour {
         rb2d = gameObject.GetComponent<Rigidbody2D>();
         anim = gameObject.GetComponent<Animator>();
 
+        // Executes the first time Start is called
         if(PlayerMover.firstRun)
         {
             PlayerMover.firstRun = false;
+            PlayerMover.bushes = new Bush[numBushes];
             PlayerMover.slimeCoords = new Vector2[slimePrefabs.Length];
             PlayerMover.slimeActives = new bool[slimePrefabs.Length];
             for (int i = 0; i < slimePrefabs.Length; i++)
             {
-                tmpLoc = new Vector3(Random.Range(0, Screen.width), Random.Range(0, Screen.height), 0f);
+                // Find location on the screen to spawn a slime
+                tmpLoc = new Vector3(Random.Range(Screen.width*0.1f, Screen.width*0.9f), Random.Range(Screen.height*0.1f, Screen.height*0.9f), 0f);
+                // Set slime coordinates to the world equivalent of that screen position
                 PlayerMover.slimeCoords[i] = Camera.main.ScreenToWorldPoint(tmpLoc);
+                // Prevent slime from spawning under the character
+                while (Mathf.Abs(PlayerMover.slimeCoords[i].x) < 1 && Mathf.Abs(PlayerMover.slimeCoords[i].y) < 1)
+                {
+                    tmpLoc = new Vector3(Random.Range(Screen.width * 0.1f, Screen.width * 0.9f), Random.Range(Screen.height * 0.1f, Screen.height * 0.9f), 0f);
+                    PlayerMover.slimeCoords[i] = Camera.main.ScreenToWorldPoint(tmpLoc);
+                }
+                // Set slime to active so it spawns into the game
                 PlayerMover.slimeActives[i]= true;
+            }
+            for (int i = 0; i < numBushes; i++)
+            {
+                PlayerMover.bushes[i] = new Bush();
+                // Find location on the screen to spawn a bush
+                tmpLoc = new Vector3(Random.Range(0, Screen.width), Random.Range(0, Screen.height), 0f);
+                // Set bush coordinates to the world equivalent of that screen position
+                PlayerMover.bushes[i].coord = Camera.main.ScreenToWorldPoint(tmpLoc);
+                PlayerMover.bushes[i].type = Random.Range(0, bushPrefabs.Length);
             }
         }
         
@@ -48,6 +78,7 @@ public class PlayerMover : MonoBehaviour {
         nameToIndex.Add("RedOverworld(Clone)", 4);
         nameToIndex.Add("YellowOverworld(Clone)", 5);
 
+        // Instantiate slimes
         for (int i = 0; i < slimePrefabs.Length; i++)
         {
             if (PlayerMover.slimeActives[i])
@@ -58,6 +89,16 @@ public class PlayerMover : MonoBehaviour {
             }
         }
 
+        // Instantiate bushes
+        for (int i = 0; i < numBushes; i++)
+        {
+            Debug.Log("Instantiating bush");
+            Instantiate(bushPrefabs[PlayerMover.bushes[i].type],
+                        PlayerMover.bushes[i].coord,
+                        Quaternion.identity);
+        }
+
+        // Set player coordinates to the last known player coordinates
         gameObject.transform.position = PlayerMover.coord;
 
         // Check for victory condition
