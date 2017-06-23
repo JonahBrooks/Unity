@@ -5,6 +5,8 @@
 /[Bb]uilds/
 /Assets/AssetStoreTools*
 *.stackdump
+*[Ww]ebGL
+*_Data
 
 /Tutorials/
 
@@ -21,6 +23,8 @@ ExportedObj/
 *.pidb
 *.booproj
 *.svd
+*.zip
+*.exe
 .idea*/
 
 # Unity3D generated meta files

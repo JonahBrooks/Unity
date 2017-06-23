@@ -29,7 +29,7 @@ public class PuzzleController : MonoBehaviour {
     private int cpuScore;
     private int slimeHealth;
     private static int playerHealth;
-    private static bool firstRun = true;
+    public static bool firstRun = true;
 
     Transform current = null;
 

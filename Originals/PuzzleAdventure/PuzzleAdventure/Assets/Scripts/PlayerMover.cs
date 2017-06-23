@@ -18,7 +18,7 @@ public class PlayerMover : MonoBehaviour {
     private GameObject[] slimes;
     private Dictionary<string, int> nameToIndex = new Dictionary<string, int>();
 
-    private static bool firstRun = true;
+    public static bool firstRun = true;
     private static Vector2 coord;
     private static Vector2[] slimeCoords;
     private static bool[] slimeActives;
@@ -92,7 +92,6 @@ public class PlayerMover : MonoBehaviour {
         // Instantiate bushes
         for (int i = 0; i < numBushes; i++)
         {
-            Debug.Log("Instantiating bush");
             Instantiate(bushPrefabs[PlayerMover.bushes[i].type],
                         PlayerMover.bushes[i].coord,
                         Quaternion.identity);

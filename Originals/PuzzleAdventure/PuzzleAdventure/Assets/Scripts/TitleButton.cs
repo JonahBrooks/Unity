@@ -7,6 +7,8 @@ public class TitleButton : MonoBehaviour {
 
     public void OnClick()
     {
+        PuzzleController.firstRun = true;
+        PlayerMover.firstRun = true;
         SceneManager.LoadScene("Adventure");
     }
 	
