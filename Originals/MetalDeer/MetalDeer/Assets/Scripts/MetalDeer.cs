@@ -10,6 +10,16 @@ using Random = UnityEngine.Random;
 
 public class MetalDeer : MonoBehaviour {
 
+
+    public GameObject deer_prefab;
+    public GameObject wolf_prefab;
+    public GameObject tiger_prefab;
+    public GameObject tree_prefab;
+
+    private GameObject[] model_map;
+    private GameObject[] new_model_map;
+    private Map map;
+
     // Private class for storing unit information
     private class Unit
     {
@@ -1017,16 +1027,130 @@ public class MetalDeer : MonoBehaviour {
         return moves;
     }
 
-     
+    
 
     // Use this for initialization
     void Start () {
-        Map rawr = new Map("Assets/Maps/small_polar_maps/50/map50_50");
-        rawr.print_map();
+        map = new Map("Assets/Maps/polar_maps/70/map70_50");
+        map.print_map();
+        model_map = new GameObject[map.size()];
+        int x, y, z;
+        y = 0;
+
+        for(int i = 0; i < map.size(); i++)
+        {
+            map.convert_from_index(out x, out z, i);
+            switch(map.get_element(x,z).c)
+            {
+                case ' ':
+                    model_map[i] = null;
+                    break;
+                case 'D':
+                    model_map[i] = Instantiate(deer_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
+                    break;
+                case '2':
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
+                    break;
+                case 'Q':
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
+                    break;
+                case 'E':
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
+                    break;
+                case 'S':
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
+                    break;
+                case 'Y':
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
+                    break;
+                case 'G':
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
+                    break;
+                case 'N':
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
+                    break;
+                case 'J':
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
+                    break;
+                case 'B':
+                    model_map[i] = Instantiate(tree_prefab, new Vector3(x, y, z), Quaternion.identity);
+                    break;
+            }
+        }
     }
 	
 	// Update is called once per frame
 	void Update () {
+
+        int x, y, z;
+        y = 0;
+
+        // These are jumbled to account for the direction of the camera
+        if(Input.GetKeyDown("down"))
+        {
+            move(true, 'w', ref map);
+            map.print_map();
+        }
+        if (Input.GetKeyDown("left"))
+        {
+            move(true, 'a', ref map);
+            map.print_map();
+        }
+        if (Input.GetKeyDown("up"))
+        {
+            move(true, 's', ref map);
+            map.print_map();
+        }
+        if (Input.GetKeyDown("right"))
+        {
+            move(true, 'd', ref map);
+            map.print_map();
+        }
+
+        
+
+        for (int i = 0; i < map.size(); i++)
+        {
+            map.convert_from_index(out x, out z, i);
+            Destroy(model_map[i]);
+            switch (map.get_element(x, z).c)
+            {
+                case ' ':
+                    model_map[i] = null;
+                    break;
+                case 'D':
+                    model_map[i] = Instantiate(deer_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
+                    break;
+                case '2':
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
+                    break;
+                case 'Q':
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
+                    break;
+                case 'E':
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
+                    break;
+                case 'S':
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
+                    break;
+                case 'Y':
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
+                    break;
+                case 'G':
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
+                    break;
+                case 'N':
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
+                    break;
+                case 'J':
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
+                    break;
+                case 'B':
+                    model_map[i] = Instantiate(tree_prefab, new Vector3(x, y, z), Quaternion.identity);
+                    break;
+            }
+        }
+
 
     }
 }
