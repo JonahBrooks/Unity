@@ -72,7 +72,108 @@ public class MetalDeer : MonoBehaviour {
             rating = 101;
         }
 
-        // TODO if I care: public Map(string file_name);
+        public Map(string file_name)
+        {
+            char one, two, three, four;
+            Queue<char> raw_map = new Queue<char>();
+            int raw_map_size;
+            Queue<Unit> new_map = new Queue<Unit>();
+
+            string[] lines = System.IO.File.ReadAllLines(file_name);
+            
+            foreach(string line in lines)
+            {
+                line_length = line.Length / 4;
+                for (int i = 0; i < line.Length; i++)
+                {
+                    raw_map.Enqueue(line[i]);
+                }
+            }
+
+            raw_map_size = raw_map.Count;
+            for (int i = 0; i < raw_map_size; i += 4)
+            {
+                one = raw_map.Dequeue();
+                two = raw_map.Dequeue();
+                three = raw_map.Dequeue();
+                four = raw_map.Dequeue();
+
+                // Validate input
+                if (one == '[' && four == ']')
+                {
+                    if (two == ' ')
+                    {
+                        // Empty space
+                        new_map.Enqueue(Unit.space);
+                    }
+                    else if (two == 'D')
+                    {
+                        // Deer
+                        new_map.Enqueue(Unit.deer);
+                        deeri = new_map.Count - 1; ;
+                        convert_from_index(out deerx, out deery, deeri);
+                    }
+                    else if (two == 'E')
+                    {
+                        // Exit
+                        new_map.Enqueue(Unit.exit);
+                        exiti = new_map.Count - 1;
+                        convert_from_index(out exitx, out exity, exiti);
+                    }
+                    else if (two == 'B')
+                    {
+                        new_map.Enqueue(Unit.edge);
+                    }
+                    else if (two == 'W')
+                    {
+                        // Wolf
+                        if (three == 'l')
+                        {
+                            new_map.Enqueue(new Unit('Q'));
+                        }
+                        else if (three == 'r')
+                        {
+                            new_map.Enqueue(new Unit('E'));
+                        }
+                        else if (three == 'u')
+                        {
+                            new_map.Enqueue(new Unit('2'));
+                        }
+                        else if (three == 'd')
+                        {
+                            new_map.Enqueue(new Unit('S'));
+                        }
+                    }
+                    else if (two == 'H')
+                    {
+                        // Hunter
+                        if (three == 'l')
+                        {
+                            new_map.Enqueue(new Unit('G'));
+                        }
+                        else if (three == 'r')
+                        {
+                            new_map.Enqueue(new Unit('J'));
+                        }
+                        else if (three == 'u')
+                        {
+                            new_map.Enqueue(new Unit('Y'));
+                        }
+                        else if (three == 'd')
+                        {
+                            new_map.Enqueue(new Unit('N'));
+                        }
+                    }
+                }
+            }
+            rating = 101;
+            map = new Unit[new_map.Count];
+            for (int i = 0; i < size(); i++)
+            {
+                map[i] = new_map.Dequeue();
+            }
+
+        }
 
         public Map(ref Map old_map)
         {
@@ -234,8 +335,12 @@ public class MetalDeer : MonoBehaviour {
 
         public void print_map()
         {
+            Debug.Log(size());
             // TODO: Get rid of this method
-            Debug.Log(map);
+            foreach(Unit unit in map)
+            {
+                Debug.Log(unit.c);
+            }
         }
 
         // Returns overlap (the character that was replaced by D after updates)
@@ -654,9 +759,6 @@ public class MetalDeer : MonoBehaviour {
     }
 
 
-    private Queue<Map> generatedMaps;
-
-
     // Makes a single move in direction on map
     // returns 1 if move resulted in a win
     // returns 0 if move resulted in valid non win/loss state
@@ -749,6 +851,7 @@ public class MetalDeer : MonoBehaviour {
 
     }
 
+    // TODO: Delete this entire method
     // Play the game using semi-random moves
     // Returns -1 on loss, 0 on stall out, number of moves taken to win on win
     int play(Map map)
@@ -914,105 +1017,16 @@ public class MetalDeer : MonoBehaviour {
         return moves;
     }
 
-
-    // TODO: Make this a coroutine that slowly fills a public queue of maps
-    // Generates the maps using mu/theta procedural generation
-    IEnumerator genMaps()
-    {
-        int mu = 2;
-        int theta = 2;
-        int initial_mutations = 15;
-        Map[] maps = new Map[mu+theta];
-        int tries = 1;
-        int num_tries = 100;
-        int wins = 0;
-        Map.ideal = 30;
-        
-        // Generate mu+theta random individuals
-        for (int i = 0; i < mu + theta; i++)
-        {
-            maps[i] = new Map();
-            // Generate a random starting map
-            maps[i].regenerate_map();
-            // Advance to add obstacles
-            for (int j = 0; j < initial_mutations; j++)
-            {
-                maps[i].advance_map();
-            }
-        }
-
-        while (generatedMaps.Count < 100)
-        {
-            // Evaluate individuals
-            for (int i = 0; i < mu + theta; i++)
-            {
-                tries = 1;
-                wins = 0;
-                while (tries <= num_tries)
-                {
-                    if (play(maps[i]) > 0) wins++;
-                    tries++;
-                    yield return new WaitForFixedUpdate();
-                }
-                maps[i].rating = 100.0f * (float)(wins) / (float)(num_tries);
-                Debug.Log("Done! It was completed " + wins + "/" + num_tries + "(" + maps[i].rating + "%)");
-            }
-            // Sort by rating
-            Array.Sort(maps);
-
-            // Drop theta and evolve all
-            for (int i = 0; i < mu + theta; i++)
-            {
-                yield return new WaitForFixedUpdate();
-                Debug.Log(maps[i].rating);
-                // Found a suitable map
-                if (Mathf.Abs(maps[i].rating - Map.ideal) < 5)
-                {
-                    generatedMaps.Enqueue(maps[i]);
-                    // Generate a random map to replace this one
-                    maps[i].regenerate_map();
-                    // Advance to add obstacles
-                    for (int j = 0; j < initial_mutations; j++)
-                    {
-                        maps[i].advance_map();
-                    }
-                }
-
-                // Too hard
-                if (maps[i].rating - Map.ideal < 0)
-                {
-                    maps[i].simplify_map();
-                    Debug.Log("Simplifying number " + i + " with rating of " + maps[i].rating);
-                }
-                else  // Too easy
-                {
-                    maps[i].advance_map();
-                    Debug.Log("Advancing number " + i + " with rating of " + maps[i].rating);
-                }
-
-                // Mutate mu of them over theta of them
-                if (i >= mu)
-                {
-                    maps[i] = maps[i - mu];
-                    maps[i].simplify_map();
-                    maps[i].simplify_map();
-                    maps[i].advance_map();
-                    maps[i].advance_map();
-                }
-            }
-            Debug.Log("Trying again");
-        }
-    }
-
+     
 
     // Use this for initialization
     void Start () {
-        generatedMaps = new Queue<Map>();
-        StartCoroutine(genMaps());
-	}
+        Map rawr = new Map("Assets/Maps/small_polar_maps/50/map50_50");
+        rawr.print_map();
+    }
 	
 	// Update is called once per frame
 	void Update () {
-        //Debug.Log(generatedMaps.Count);
-	}
+
+    }
 }
