@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
 
@@ -15,10 +16,16 @@ public class MetalDeer : MonoBehaviour {
     public GameObject wolf_prefab;
     public GameObject tiger_prefab;
     public GameObject tree_prefab;
+    public GameObject exit_prefab;
+
+    public Text notification_text;
+
 
     private GameObject[] model_map;
     private GameObject[] new_model_map;
-    private Map map;
+    private Map current_map;
+
+
 
     // Private class for storing unit information
     private class Unit
@@ -82,12 +89,14 @@ public class MetalDeer : MonoBehaviour {
             rating = 101;
         }
 
+        // Loads a map from a file
         public Map(string file_name)
         {
             char one, two, three, four;
             Queue<char> raw_map = new Queue<char>();
             int raw_map_size;
             Queue<Unit> new_map = new Queue<Unit>();
+            Unit tmp;
 
             string[] lines = System.IO.File.ReadAllLines(file_name);
             
@@ -113,8 +122,9 @@ public class MetalDeer : MonoBehaviour {
                 {
                     if (two == ' ')
                     {
+                        tmp = new Unit(' ');
                         // Empty space
-                        new_map.Enqueue(Unit.space);
+                        new_map.Enqueue(new Unit(' ',Unit.space.id));
                     }
                     else if (two == 'D')
                     {
@@ -203,6 +213,7 @@ public class MetalDeer : MonoBehaviour {
             return map.Length;
         }
 
+        // Returns the index representing x,y
         public int convert_to_index(int x, int y)
         {
             int i = 0;
@@ -211,19 +222,21 @@ public class MetalDeer : MonoBehaviour {
             return i;
         }
 
+        // Returns the x,y coordinates repressened by index i
         public void convert_from_index(out int x, out int y, int i)
         {
             x = i % (line_length);
             y = i / (line_length);
         }
 
+        // Generates a new, empty map with the deer in one corner and the exit in the other.
         public void regenerate_map()
         {
             int deer_index = 0;
             int exit_index = size() - 1;
 
-            deer_index = Random.Range(0,size());
-            exit_index = Random.Range(0,size());
+            deer_index = 0; // Random.Range(0,size());
+            exit_index = size() - 1; // Random.Range(0,size());
 
             while (deer_index == exit_index && size() > 1)
             {
@@ -252,84 +265,7 @@ public class MetalDeer : MonoBehaviour {
             rating = 101;
         }
 
-        // Increase the complexity of the map by adding one element
-        public void advance_map()
-        {
-            int type = Random.Range(0,3); // Pick Block, Wolf, or Hunter
-            int direction = Random.Range(0,4); // Pick a direction for the wolf or hunter to face
-            int index = Random.Range(0,size());
-
-            // Don't overwrite deer or exit, okay to overwrite anything else
-            while ((map[index].c == 'D' || map[index].c == 'X') && size() > 2)
-            {
-                index = Random.Range(0,size());
-            }
-
-            if (type == 0)
-            {
-                map[index].c = 'B';
-            }
-            else if (type == 1)
-            {
-                switch (direction)
-                {
-                    case 0:
-                        map[index].c = '2';
-                        break;
-                    case 1:
-                        map[index].c = 'Q';
-                        break;
-                    case 2:
-                        map[index].c = 'S';
-                        break;
-                    case 3:
-                        map[index].c = 'E';
-                        break;
-                }
-            }
-            else
-            {
-                switch (direction)
-                {
-                    case 0:
-                        map[index].c = 'Y';
-                        break;
-                    case 1:
-                        map[index].c = 'G';
-                        break;
-                    case 2:
-                        map[index].c = 'N';
-                        break;
-                    case 3:
-                        map[index].c = 'J';
-                        break;
-                }
-            }
-        }
-
-        //Decrease the complexit of the map by removing one element
-        public void simplify_map()
-        {
-            List<int> indexes = new List<int>();
-
-            // Gather indexes of objects
-            for (int i = 0; i < size(); i++)
-            {
-                if (!(map[i].c == ' ' || map[i].c == 'D' || map[i].c == 'X'))
-                {
-                    indexes.Add(i);
-                }
-            }
-
-            if (indexes.Count > 0)
-            {
-                // Select one index at random and set its map position to space
-                map[indexes[Random.Range(0,indexes.Count)]] = Unit.space;
-            }
-
-
-        }
-
+        // Returns the unit at given x,y coordinates
         public Unit get_element(int x, int y)
         {
             int i = convert_to_index(x, y);
@@ -343,15 +279,6 @@ public class MetalDeer : MonoBehaviour {
             }
         }
 
-        public void print_map()
-        {
-            Debug.Log(size());
-            // TODO: Get rid of this method
-            foreach(Unit unit in map)
-            {
-                Debug.Log(unit.c);
-            }
-        }
 
         // Returns overlap (the character that was replaced by D after updates)
         public Unit update_map(int x, int y)
@@ -371,7 +298,8 @@ public class MetalDeer : MonoBehaviour {
 
             // Clear Deer from old position
             map[convert_to_index(old_x, old_y)].c = ' ';
-
+            map[convert_to_index(old_x, old_y)].id = Unit.space.id;
+            
             // Move wolves and hunters 
             // Fill queue
             for (int i = 0; i < size(); i++)
@@ -395,7 +323,7 @@ public class MetalDeer : MonoBehaviour {
             while (q.Count > 0)
             {
                 u = q.Dequeue();
-
+            
                 switch (u.c)
                 {
                     case 'Q':
@@ -532,7 +460,7 @@ public class MetalDeer : MonoBehaviour {
             while (q2.Count > 0)
             {
                 u = q2.Dequeue();
-
+            
                 switch (u.c)
                 {
                     case 'Q':
@@ -677,7 +605,7 @@ public class MetalDeer : MonoBehaviour {
             while (q3.Count > 0)
             {
                 u = q3.Dequeue();
-
+            
                 switch (u.c)
                 {
                     case 'G':
@@ -733,7 +661,9 @@ public class MetalDeer : MonoBehaviour {
 
             // Move deer
             overlap = get_element(x, y);
+
             map[convert_to_index(x, y)].c = 'D';
+            map[convert_to_index(x, y)].id = Unit.deer.id;
             deerx = x;
             deery = y;
             deeri = convert_to_index(x, y);
@@ -861,186 +791,32 @@ public class MetalDeer : MonoBehaviour {
 
     }
 
-    // TODO: Delete this entire method
-    // Play the game using semi-random moves
-    // Returns -1 on loss, 0 on stall out, number of moves taken to win on win
-    int play(Map map)
+
+    void text_map(Map map)
     {
-
-        // Copy map to test moves before making them.
-        Map test = new Map(ref map);
-
-
-        Queue<char> input = new Queue<char>();
-        int rnd;
-        int moves = 0;
-        int wchance = 25;
-        int achance = 25;
-        int schance = 25;
-        int dchance = 25;
-        int wvalid = 0;
-        int avalid = 0;
-        int svalid = 0;
-        int dvalid = 0;
-        int wresult = 0;
-        int aresult = 0;
-        int sresult = 0;
-        int dresult = 0;
-        int num_valid = 0;
-
-        int move_result = 0;
-        char tmp;
-        while (move_result == 0 || move_result == -2)
+        notification_text.text = "";
+        for (int i = 0; i < map.size(); i++)
         {
-            // Check validity of each direction of movement
-            test = map;
-            wresult = move(false, 'w', ref test);
-            test = map;
-            aresult = move(false, 'a', ref test);
-            test = map;
-            sresult = move(false, 's', ref test);
-            test = map;
-            dresult = move(false, 'd', ref test);
-
-            // Reset random chances
-            wchance = 25;
-            achance = 25;
-            schance = 25;
-            dchance = 25;
-
-            if (wresult < 0) // moving w will lose or is invalid
+            notification_text.text += map.map[i].c;
+            if ((i + 1) % map.line_length == 0)
             {
-                wvalid = 0;
+                notification_text.text += "\n";
             }
-            else // Moving is valid, but won't win
-            {
-                wvalid = 1;
-            }
-
-            if (aresult < 0) // moving a will lose or is invalid
-            {
-                avalid = 0;
-            }
-            else // Moving is valid, but won't win
-            {
-                avalid = 1;
-            }
-
-            if (sresult < 0) // moving s will lose or is invalid
-            {
-                svalid = 0;
-            }
-            else // Moving is valid, but won't win
-            {
-                svalid = 1;
-            }
-
-            if (dresult < 0) // moving d will lose or is invalid
-            {
-                dvalid = 0;
-            }
-            else // Moving is valid, but won't win
-            {
-                dvalid = 1;
-            }
-
-
-            if (wresult == 1) // Moving w will win
-            {
-                wvalid = 1;
-                avalid = 0;
-                svalid = 0;
-                dvalid = 0;
-            }
-            if (aresult == 1) // Moving a will win
-            {
-                wvalid = 0;
-                avalid = 1;
-                svalid = 0;
-                dvalid = 0;
-            }
-            if (sresult == 1) // Moving s will win
-            {
-                wvalid = 0;
-                avalid = 0;
-                svalid = 1;
-                dvalid = 0;
-            }
-            if (dresult == 1) // Moving d will win
-            {
-                wvalid = 0;
-                avalid = 0;
-                svalid = 0;
-                dvalid = 1;
-            }
-
-            num_valid = wvalid + avalid + svalid + dvalid;
-
-            // There are no valid moves
-            if (num_valid == 0)
-            {
-                num_valid = 1;   // Force an up move. This will either stall out or lose.
-            }
-
-            // This will force chance to be 0 if the move is invalid
-            // And otherwise split 100% evenly among valid moves
-            wchance = wvalid * 100 / num_valid;
-            achance = avalid * 100 / num_valid;
-            schance = svalid * 100 / num_valid;
-            dchance = dvalid * 100 / num_valid;
-
-            // Get random input from valid options
-
-            rnd = Random.Range(0, 100);
-            if (rnd < wchance)
-            {
-                input.Enqueue('w');
-            }
-            else if (rnd < achance + wchance)
-            {
-                input.Enqueue('a');
-            }
-            else if (rnd < schance + achance + wchance)
-            {
-                input.Enqueue('s');
-            }
-            else
-            {
-                input.Enqueue('d');
-            }
-
-
-            // Get direction of movement
-            tmp = input.Dequeue();
-
-            // Make the move
-            move_result = move(false, tmp, ref map);
-
-            // Update moves
-            moves++;
-
-            // Stall out if generated moves is empty
-            if (moves > 1000) break;  // Ran out of moves; stall out
         }
-        if (move_result == -1) moves = -1;
-        if (move_result == 0 || move_result == -2) moves = 0;
-        return moves;
     }
-
-    
 
     // Use this for initialization
     void Start () {
-        map = new Map("Assets/Maps/polar_maps/70/map70_50");
-        map.print_map();
-        model_map = new GameObject[map.size()];
+        current_map = new Map("Assets/Maps/polar_maps/70/map70_50");
+        text_map(current_map);
+        model_map = new GameObject[current_map.size()];
         int x, y, z;
         y = 0;
 
-        for(int i = 0; i < map.size(); i++)
+        for(int i = 0; i < current_map.size(); i++)
         {
-            map.convert_from_index(out x, out z, i);
-            switch(map.get_element(x,z).c)
+            current_map.convert_from_index(out x, out z, i);
+            switch(current_map.get_element(x,z).c)
             {
                 case ' ':
                     model_map[i] = null;
@@ -1055,10 +831,10 @@ public class MetalDeer : MonoBehaviour {
                     model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
                     break;
                 case 'E':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
                     break;
                 case 'S':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
                     break;
                 case 'Y':
                     model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
@@ -1074,6 +850,9 @@ public class MetalDeer : MonoBehaviour {
                     break;
                 case 'B':
                     model_map[i] = Instantiate(tree_prefab, new Vector3(x, y, z), Quaternion.identity);
+                    break;
+                case 'X':
+                    model_map[i] = Instantiate(exit_prefab, new Vector3(x, y, z), Quaternion.identity);
                     break;
             }
         }
@@ -1088,32 +867,28 @@ public class MetalDeer : MonoBehaviour {
         // These are jumbled to account for the direction of the camera
         if(Input.GetKeyDown("down"))
         {
-            move(true, 'w', ref map);
-            map.print_map();
+            move(true, 'w', ref current_map);
         }
         if (Input.GetKeyDown("left"))
         {
-            move(true, 'a', ref map);
-            map.print_map();
+            move(true, 'a', ref current_map);
         }
         if (Input.GetKeyDown("up"))
         {
-            move(true, 's', ref map);
-            map.print_map();
+            move(true, 's', ref current_map);
         }
         if (Input.GetKeyDown("right"))
         {
-            move(true, 'd', ref map);
-            map.print_map();
+            move(true, 'd', ref current_map);
         }
 
-        
+        text_map(current_map);
 
-        for (int i = 0; i < map.size(); i++)
+        for (int i = 0; i < current_map.size(); i++)
         {
-            map.convert_from_index(out x, out z, i);
+            current_map.convert_from_index(out x, out z, i);
             Destroy(model_map[i]);
-            switch (map.get_element(x, z).c)
+            switch (current_map.get_element(x, z).c)
             {
                 case ' ':
                     model_map[i] = null;
@@ -1122,16 +897,16 @@ public class MetalDeer : MonoBehaviour {
                     model_map[i] = Instantiate(deer_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
                     break;
                 case '2':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
                     break;
                 case 'Q':
                     model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
                     break;
                 case 'E':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
                     break;
                 case 'S':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
                     break;
                 case 'Y':
                     model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
@@ -1147,6 +922,9 @@ public class MetalDeer : MonoBehaviour {
                     break;
                 case 'B':
                     model_map[i] = Instantiate(tree_prefab, new Vector3(x, y, z), Quaternion.identity);
+                    break;
+                case 'X':
+                    model_map[i] = Instantiate(exit_prefab, new Vector3(x, y, z), Quaternion.identity);
                     break;
             }
         }
