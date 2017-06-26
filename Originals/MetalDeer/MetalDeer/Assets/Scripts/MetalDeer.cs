@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using Random = UnityEngine.Random;
 
@@ -17,16 +18,17 @@ public class MetalDeer : MonoBehaviour {
     public GameObject tiger_prefab;
     public GameObject tree_prefab;
     public GameObject exit_prefab;
+    public GameObject ground_prefab;
 
     public Text notification_text;
+    public static int difficulty = 70; // 30, 50, 70
 
 
     private GameObject[] model_map;
     private GameObject[] new_model_map;
     private Map current_map;
-    private int difficulty = 70; // 30, 50, 70
     private int map_num = 50; // 0-99
-
+    private int last_move_angle = 90;
 
 
     // Private class for storing unit information
@@ -98,7 +100,7 @@ public class MetalDeer : MonoBehaviour {
             Queue<char> raw_map = new Queue<char>();
             int raw_map_size;
             Queue<Unit> new_map = new Queue<Unit>();
-            Unit tmp;
+
 
             string[] lines = System.IO.File.ReadAllLines(file_name);
             
@@ -124,7 +126,7 @@ public class MetalDeer : MonoBehaviour {
                 {
                     if (two == ' ')
                     {
-                        tmp = new Unit(' ');
+
                         // Empty space
                         new_map.Enqueue(new Unit(' ',Unit.space.id));
                     }
@@ -663,7 +665,7 @@ public class MetalDeer : MonoBehaviour {
 
             // Move deer
             overlap = get_element(x, y).c;
-            Debug.Log(overlap);
+
 
             map[convert_to_index(x, y)].c = 'D';
             map[convert_to_index(x, y)].id = Unit.deer.id;
@@ -710,7 +712,7 @@ public class MetalDeer : MonoBehaviour {
     int move(bool player, char direction, ref Map map)
     {
         //TODO: Display the errors somewhere other than Debug.Log
-        int deer_pos = map.deeri;
+
         int x = map.deerx;
         int y = map.deery;
         int new_x = 0;
@@ -772,7 +774,6 @@ public class MetalDeer : MonoBehaviour {
                 }
                 break;
         }
-        Debug.Log(overlap);
 
         x = new_x;
         y = new_y;
@@ -813,12 +814,35 @@ public class MetalDeer : MonoBehaviour {
     // Use this for initialization
     void Start () {
         string map_string;
+        map_num = Random.Range(0, 100);
         map_string = "Assets/Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
+        // Fetch new map
         current_map = new Map(map_string);
-        text_map(current_map);
+        // Position deer and exit correctly for new map
+        current_map.deeri = 0;
+        current_map.deerx = 0;
+        current_map.deery = 0;
+        current_map.map[0].c = 'D';
+        current_map.map[0].id = Unit.deer.id;
+        current_map.exiti = current_map.size() - 1;
+        current_map.convert_from_index(out current_map.exitx, out current_map.exity, current_map.exiti);
+        current_map.map[current_map.exiti].c = 'X';
+        current_map.map[current_map.exiti].id = Unit.exit.id;
+
         model_map = new GameObject[current_map.size()];
         int x, y, z;
         y = 0;
+
+
+        // Build ground grid
+        for(int i = 0; i < 16; i++)
+        {
+            for(int j = 0; j < 9; j++)
+            {
+                Instantiate(ground_prefab, new Vector3(i, -0.5f, j), Quaternion.identity);
+            }
+        }
+
 
         for(int i = 0; i < current_map.size(); i++)
         {
@@ -879,23 +903,23 @@ public class MetalDeer : MonoBehaviour {
         // These are jumbled to account for the direction of the camera
         if (Input.GetKeyDown("down"))
         {
-            move_result = move(true, 'w', ref current_map);
-            Debug.Log(move_result);
+            move_result = move(false, 'w', ref current_map);
+            last_move_angle = 180;
         }
         if (Input.GetKeyDown("left"))
         {
-            move_result = move(true, 'a', ref current_map);
-            Debug.Log(move_result);
+            move_result = move(false, 'a', ref current_map);
+            last_move_angle = -90;
         }
         if (Input.GetKeyDown("up"))
         {
-            move_result = move(true, 's', ref current_map);
-            Debug.Log(move_result);
+            move_result = move(false, 's', ref current_map);
+            last_move_angle = 0;
         }
         if (Input.GetKeyDown("right"))
         {
-            move_result = move(true, 'd', ref current_map);
-            Debug.Log(move_result);
+            move_result = move(false, 'd', ref current_map);
+            last_move_angle = 90;
         }
         
         // The player won
@@ -903,7 +927,8 @@ public class MetalDeer : MonoBehaviour {
         {
             map_num = Random.Range(0,100);
             map_string = "Assets/Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
-            // Get new map    
+            Debug.Log(map_string);
+            // Position deer and exit correctly for new map  
             current_map.deeri = 0;
             current_map.deerx = 0;
             current_map.deery = 0;
@@ -913,11 +938,17 @@ public class MetalDeer : MonoBehaviour {
             current_map.convert_from_index(out current_map.exitx, out current_map.exity, current_map.exiti);
             current_map.map[current_map.exiti].c = 'X';
             current_map.map[current_map.exiti].id = Unit.exit.id;
+            // Fetch new map
             current_map = new Map(map_string);
 
         }
+        // The player lost
+        if(move_result == -1)
+        {
+            SceneManager.LoadScene("GameOver");
+        }
 
-        text_map(current_map);
+       // text_map(current_map);
 
         for (int i = 0; i < current_map.size(); i++)
         {
@@ -929,7 +960,7 @@ public class MetalDeer : MonoBehaviour {
                     model_map[i] = null;
                     break;
                 case 'D':
-                    model_map[i] = Instantiate(deer_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
+                    model_map[i] = Instantiate(deer_prefab, new Vector3(x, y, z), Quaternion.Euler(0, last_move_angle, 0));
                     break;
                 case '2':
                     model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
