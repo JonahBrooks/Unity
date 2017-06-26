@@ -24,6 +24,8 @@ public class MetalDeer : MonoBehaviour {
     private GameObject[] model_map;
     private GameObject[] new_model_map;
     private Map current_map;
+    private int difficulty = 70; // 30, 50, 70
+    private int map_num = 50; // 0-99
 
 
 
@@ -281,9 +283,9 @@ public class MetalDeer : MonoBehaviour {
 
 
         // Returns overlap (the character that was replaced by D after updates)
-        public Unit update_map(int x, int y)
+        public char update_map(int x, int y)
         {
-            Unit overlap = Unit.space; ;
+            char overlap = ' ';
 
             int vision_index = 0;
             int old_x = deerx;
@@ -660,7 +662,8 @@ public class MetalDeer : MonoBehaviour {
             }
 
             // Move deer
-            overlap = get_element(x, y);
+            overlap = get_element(x, y).c;
+            Debug.Log(overlap);
 
             map[convert_to_index(x, y)].c = 'D';
             map[convert_to_index(x, y)].id = Unit.deer.id;
@@ -716,7 +719,7 @@ public class MetalDeer : MonoBehaviour {
         new_x = x;
         new_y = y;
 
-        Unit overlap = Unit.space;
+        char overlap = ' ';
 
         switch (direction)
         {
@@ -769,21 +772,23 @@ public class MetalDeer : MonoBehaviour {
                 }
                 break;
         }
+        Debug.Log(overlap);
+
         x = new_x;
         y = new_y;
-        if (overlap.c == 'X')
+        if (overlap == 'X')
         {
             if (player) Debug.Log("Win!");
             return 1;
         }
-        if (overlap.c == 'Q' || overlap.c == 'E' || overlap.c == '2' || overlap.c == 'S')
+        if (overlap == 'Q' || overlap == 'E' || overlap == '2' || overlap == 'S')
         {
-            if (player) Debug.Log("Lose! To Unit #" + overlap.id);
+            if (player) Debug.Log("Lose!");
             return -1;
         }
-        if (overlap.c == 'G' || overlap.c == 'J' || overlap.c == 'Y' || overlap.c == 'N' || overlap.c == 'H')
+        if (overlap == 'G' || overlap == 'J' || overlap == 'Y' || overlap == 'N' || overlap == 'H')
         {
-            if (player) Debug.Log("Lose! To Unit #" + overlap.id);
+            if (player) Debug.Log("Lose!");
             return -1;
         }
         return 0;
@@ -807,7 +812,9 @@ public class MetalDeer : MonoBehaviour {
 
     // Use this for initialization
     void Start () {
-        current_map = new Map("Assets/Maps/polar_maps/70/map70_50");
+        string map_string;
+        map_string = "Assets/Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
+        current_map = new Map(map_string);
         text_map(current_map);
         model_map = new GameObject[current_map.size()];
         int x, y, z;
@@ -825,7 +832,7 @@ public class MetalDeer : MonoBehaviour {
                     model_map[i] = Instantiate(deer_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
                     break;
                 case '2':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
                     break;
                 case 'Q':
                     model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
@@ -834,16 +841,16 @@ public class MetalDeer : MonoBehaviour {
                     model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
                     break;
                 case 'S':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
+                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
                     break;
                 case 'Y':
-                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
                     break;
                 case 'G':
                     model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
                     break;
                 case 'N':
-                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
                     break;
                 case 'J':
                     model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
@@ -864,22 +871,50 @@ public class MetalDeer : MonoBehaviour {
         int x, y, z;
         y = 0;
 
+        int move_result = 0;
+
+
+        string map_string;
+
         // These are jumbled to account for the direction of the camera
-        if(Input.GetKeyDown("down"))
+        if (Input.GetKeyDown("down"))
         {
-            move(true, 'w', ref current_map);
+            move_result = move(true, 'w', ref current_map);
+            Debug.Log(move_result);
         }
         if (Input.GetKeyDown("left"))
         {
-            move(true, 'a', ref current_map);
+            move_result = move(true, 'a', ref current_map);
+            Debug.Log(move_result);
         }
         if (Input.GetKeyDown("up"))
         {
-            move(true, 's', ref current_map);
+            move_result = move(true, 's', ref current_map);
+            Debug.Log(move_result);
         }
         if (Input.GetKeyDown("right"))
         {
-            move(true, 'd', ref current_map);
+            move_result = move(true, 'd', ref current_map);
+            Debug.Log(move_result);
+        }
+        
+        // The player won
+        if(move_result == 1)
+        {
+            map_num = Random.Range(0,100);
+            map_string = "Assets/Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
+            // Get new map    
+            current_map.deeri = 0;
+            current_map.deerx = 0;
+            current_map.deery = 0;
+            current_map.map[0].c = 'D';
+            current_map.map[0].id = Unit.deer.id;
+            current_map.exiti = current_map.size() - 1;
+            current_map.convert_from_index(out current_map.exitx, out current_map.exity, current_map.exiti);
+            current_map.map[current_map.exiti].c = 'X';
+            current_map.map[current_map.exiti].id = Unit.exit.id;
+            current_map = new Map(map_string);
+
         }
 
         text_map(current_map);
@@ -909,13 +944,13 @@ public class MetalDeer : MonoBehaviour {
                     model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
                     break;
                 case 'Y':
-                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
                     break;
                 case 'G':
                     model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
                     break;
                 case 'N':
-                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
+                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
                     break;
                 case 'J':
                     model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
