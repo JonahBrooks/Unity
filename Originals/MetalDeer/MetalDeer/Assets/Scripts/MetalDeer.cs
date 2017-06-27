@@ -832,10 +832,26 @@ public class MetalDeer : MonoBehaviour {
     // Use this for initialization
     void Start () {
         string map_string;
+        //For WebGL
+        //switch (difficulty)
+        //{
+        //    case 70:
+        //        map_num = Random.Range(0, 100);
+        //        break;
+        //    case 50:
+        //        map_num = Random.Range(100, 200);
+        //        break;
+        //    case 30:
+        //        map_num = Random.Range(200, 300);
+        //        break;
+        //}
+        // For PC
         map_num = Random.Range(0, 100);
+
         map_string = "Assets/Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
         // Fetch new map
-        current_map = new Map(map_string);
+        //current_map = new Map(map_num); // For WebGL
+        current_map = new Map(map_string); // For PC
         // Position deer and exit correctly for new map
         current_map.deeri = 0;
         current_map.deerx = 0;
@@ -943,9 +959,24 @@ public class MetalDeer : MonoBehaviour {
         // The player won
         if(move_result == 1)
         {
+            // For WebGL
+            //switch (difficulty)
+            //{
+            //    case 70:
+            //        map_num = Random.Range(0, 100);
+            //        break;
+            //    case 50:
+            //        map_num = Random.Range(100, 200);
+            //        break;
+            //    case 30:
+            //        map_num = Random.Range(200, 300);
+            //        break;
+            //}
+            // For PC
             map_num = Random.Range(0,100);
+
             map_string = "Assets/Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
-            Debug.Log(map_string);
+            //Debug.Log(map_string);
             // Position deer and exit correctly for new map  
             current_map.deeri = 0;
             current_map.deerx = 0;
@@ -957,7 +988,8 @@ public class MetalDeer : MonoBehaviour {
             current_map.map[current_map.exiti].c = 'X';
             current_map.map[current_map.exiti].id = Unit.exit.id;
             // Fetch new map
-            current_map = new Map(map_string);
+            //current_map = new Map(map_num); // For WebGL
+            current_map = new Map(map_string); // For PC
 
         }
         // The player lost

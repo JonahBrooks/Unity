@@ -806,80 +806,97 @@ Unit Map::update_map(int x, int y)
 void Map::save_map(string name)
 {
 	ofstream mapFile;
-	mapFile.open(name.c_str());
+	mapFile.open(name.c_str(), ios::out | ios::app);
 	mapFile << this->toString();
 	mapFile.close();
 }
 
 
-
 string Map::toString()
 {
-	// FMap legend:
-	//  'D ' is the deer
-	//  'B ' is a block
-	//  'W*' is a wolf going in * direction ( * = {u,d,l,r} )
-	//  'H*' is a hunter going in * direction
-	//  'Ex' is the exit
+  stringstream toReturn;
 
-	// Map legend:
-	//  'D' is the deer
-	//  'B' is a block
-	//  '2' is a wolf going up, 'S' is a wolf going down, 'E' is a wolf going right, 'Q' is a wolf going left
-	//  'Y' is a hunter going up, 'N' is a hunter going down, 'J' is a hunter going right, 'G' is a hunter going left
-	//  'X' is the exit
+  toReturn << "{";
 
-	stringstream toReturn;
-	
-	for (int i = 0; i < size(); i++)
-	{
-		switch (map[i].c)
-		{
-		case 'D':
-			toReturn << "[D ]";
-			break;
-		case 'B':
-			toReturn << "[B ]";
-			break;
-		case '2':
-			toReturn << "[Wu]";
-			break;
-		case 'S':
-			toReturn << "[Wd]";
-			break;
-		case 'Q':
-			toReturn << "[Wl]";
-			break;
-		case 'E':
-			toReturn << "[Wr]";
-			break;
-		case 'Y':
-			toReturn << "[Hu]";
-			break;
-		case 'N':
-			toReturn << "[Hd]";
-			break;
-		case 'G':
-			toReturn << "[Hl]";
-			break;
-		case 'J':
-			toReturn << "[Hr]";
-			break;
-		case 'X':
-			toReturn << "[Ex]";
-			break;
-    case ' ':
-      toReturn << "[  ]";
-      break;
-		}
+  for(int i =0; i < size(); i++)
+  {
+    toReturn << "'" << map[i].c << "',";
+  }
 
-		if ((i + 1) % (line_length) == 0)
-		{
-			toReturn << endl;
-		}
-	}
-	return toReturn.str();
+  toReturn << "},\n";
+
+  return toReturn.str();
+
 }
+
+
+//string Map::toString()
+//{
+//	// FMap legend:
+//	//  'D ' is the deer
+//	//  'B ' is a block
+//	//  'W*' is a wolf going in * direction ( * = {u,d,l,r} )
+//	//  'H*' is a hunter going in * direction
+//	//  'Ex' is the exit
+//
+//	// Map legend:
+//	//  'D' is the deer
+//	//  'B' is a block
+//	//  '2' is a wolf going up, 'S' is a wolf going down, 'E' is a wolf going right, 'Q' is a wolf going left
+//	//  'Y' is a hunter going up, 'N' is a hunter going down, 'J' is a hunter going right, 'G' is a hunter going left
+//	//  'X' is the exit
+//
+//	stringstream toReturn;
+//	
+//	for (int i = 0; i < size(); i++)
+//	{
+//		switch (map[i].c)
+//		{
+//		case 'D':
+//			toReturn << "[D ]";
+//			break;
+//		case 'B':
+//			toReturn << "[B ]";
+//			break;
+//		case '2':
+//			toReturn << "[Wu]";
+//			break;
+//		case 'S':
+//			toReturn << "[Wd]";
+//			break;
+//		case 'Q':
+//			toReturn << "[Wl]";
+//			break;
+//		case 'E':
+//			toReturn << "[Wr]";
+//			break;
+//		case 'Y':
+//			toReturn << "[Hu]";
+//			break;
+//		case 'N':
+//			toReturn << "[Hd]";
+//			break;
+//		case 'G':
+//			toReturn << "[Hl]";
+//			break;
+//		case 'J':
+//			toReturn << "[Hr]";
+//			break;
+//		case 'X':
+//			toReturn << "[Ex]";
+//			break;
+//    case ' ':
+//      toReturn << "[  ]";
+//      break;
+//		}
+//
+//		if ((i + 1) % (line_length) == 0)
+//		{
+//			toReturn << endl;
+//		}
+//	}
+//	return toReturn.str();
+//}
 
 
 
@@ -1164,8 +1181,8 @@ int main()
   // Note, mu and theta must be equal
 	int mu = 6;
 	int theta = 6;
-	int initial_mutations = 5;
-	vector<Map> maps(mu + theta, Map(64,8));
+	int initial_mutations = 15;
+	vector<Map> maps(mu + theta);
 	Map map;
   string map_name_base;
   string map_name;
@@ -1177,7 +1194,7 @@ int main()
 	int num_tries = 100;
 	int wins = 0;
   int num_maps = 100;
-	Map::ideal = 90;
+	Map::ideal = 30;
 	srand(time(NULL));
 
 	bool map_found = false;
@@ -1227,7 +1244,7 @@ int main()
         map_name_ss.str("");
         map_name_ss << map_name_base << map_num;
         cout << map_name_ss.str() << " found!\n";
-        map.save_map(map_name_ss.str());
+        map.save_map("Maps");
         map_num++;
         
         // Reset this map and continue
