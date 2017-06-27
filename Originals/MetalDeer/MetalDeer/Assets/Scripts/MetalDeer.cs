@@ -93,6 +93,24 @@ public class MetalDeer : MonoBehaviour {
             rating = 101;
         }
 
+        // Load map from code
+        public Map(int index)
+        {
+            int s = 16 * 9;
+            map = new Unit[s];
+            line_length = 16;
+            regenerate_map();
+            rating = 101;
+            for(int i = 0; i < s; i++)
+            {
+                map[i].c = Maps.maps[index,i];
+                map[i] = new Unit(map[i].c);
+            }
+
+
+
+        }
+
         // Loads a map from a file
         public Map(string file_name)
         {
