@@ -51,8 +51,8 @@ public class PlayerMover : MonoBehaviour {
                 tmpLoc = new Vector3(Random.Range(Screen.width*0.1f, Screen.width*0.9f), Random.Range(Screen.height*0.1f, Screen.height*0.9f), 0f);
                 // Set slime coordinates to the world equivalent of that screen position
                 PlayerMover.slimeCoords[i] = Camera.main.ScreenToWorldPoint(tmpLoc);
-                // Prevent slime from spawning under the character
-                while (Mathf.Abs(PlayerMover.slimeCoords[i].x) < 1 && Mathf.Abs(PlayerMover.slimeCoords[i].y) < 1)
+                // Prevent slime from spawning inside another collider
+                while (Physics2D.OverlapCircle(PlayerMover.slimeCoords[i],0f))
                 {
                     tmpLoc = new Vector3(Random.Range(Screen.width * 0.1f, Screen.width * 0.9f), Random.Range(Screen.height * 0.1f, Screen.height * 0.9f), 0f);
                     PlayerMover.slimeCoords[i] = Camera.main.ScreenToWorldPoint(tmpLoc);
@@ -60,15 +60,21 @@ public class PlayerMover : MonoBehaviour {
                 // Set slime to active so it spawns into the game
                 PlayerMover.slimeActives[i]= true;
             }
-            for (int i = 0; i < numBushes; i++)
-            {
-                PlayerMover.bushes[i] = new Bush();
-                // Find location on the screen to spawn a bush
-                tmpLoc = new Vector3(Random.Range(0, Screen.width), Random.Range(0, Screen.height), 0f);
-                // Set bush coordinates to the world equivalent of that screen position
-                PlayerMover.bushes[i].coord = Camera.main.ScreenToWorldPoint(tmpLoc);
-                PlayerMover.bushes[i].type = Random.Range(0, bushPrefabs.Length);
-            }
+            //for (int i = 0; i < numBushes; i++)
+            //{
+            //    PlayerMover.bushes[i] = new Bush();
+            //    // Find location on the screen to spawn a bush
+            //    tmpLoc = new Vector3(Random.Range(0, Screen.width), Random.Range(0, Screen.height), 0f);
+            //    // Set bush coordinates to the world equivalent of that screen position
+            //    PlayerMover.bushes[i].coord = Camera.main.ScreenToWorldPoint(tmpLoc);
+            //    // Prevent bush from spawning inside another collider
+            //    while (Physics2D.OverlapCircle(PlayerMover.bushes[i].coord, 0f))
+            //    {
+            //        tmpLoc = new Vector3(Random.Range(Screen.width * 0.1f, Screen.width * 0.9f), Random.Range(Screen.height * 0.1f, Screen.height * 0.9f), 0f);
+            //        PlayerMover.bushes[i].coord = Camera.main.ScreenToWorldPoint(tmpLoc);
+            //    }
+            //    PlayerMover.bushes[i].type = Random.Range(0, bushPrefabs.Length);
+            //}
         }
         
         nameToIndex.Add("BlueOverworld(Clone)", 0);
