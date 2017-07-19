@@ -11,7 +11,7 @@ public class PuzzleController : MonoBehaviour {
     public GameObject[][] board = new GameObject[8][];
     public bool animationDelay = true;
     public Text scoreText;
-    public int maxHealth;
+    public int playerMaxHealth;
     public int slimeMaxHealth;
 
     // Stores for each element in board if it should be cleared
@@ -28,7 +28,8 @@ public class PuzzleController : MonoBehaviour {
     private int score;
     private int cpuScore;
     private int slimeHealth;
-    private static int playerHealth;
+    public static int maxHealth = 100;
+    public static int playerHealth;
     public static bool firstRun = true;
 
     Transform current = null;
@@ -40,7 +41,8 @@ public class PuzzleController : MonoBehaviour {
         if(PuzzleController.firstRun)
         {
             PuzzleController.firstRun = false;
-            PuzzleController.playerHealth = maxHealth;
+            PuzzleController.maxHealth = playerMaxHealth; // Beds now restore to playerMaxHealth
+            PuzzleController.playerHealth = PuzzleController.maxHealth;
         }
 
         score = 0;

@@ -8,7 +8,7 @@ public class PlayerMover : MonoBehaviour {
     public float speed = 2f;
     public float maxSpeed = 2f;
     public GameObject[] slimePrefabs;
-    //public int numSlimes;
+    public int numSlimes;
     public Vector2 slimeSpawnMins; // -23,-24
     public Vector2 slimeSpawnMaxs; // 21, 20
     public GameObject[] bushPrefabs;
@@ -19,12 +19,13 @@ public class PlayerMover : MonoBehaviour {
     private Rigidbody2D rb2d;
 
     private GameObject[] slimes;
-    private Dictionary<string, int> nameToIndex = new Dictionary<string, int>();
 
     public static bool firstRun = true;
     private static Vector2 coord;
     private static Vector2[] slimeCoords;
     private static bool[] slimeActives;
+    private static int[] slimeTypes;
+    private static Dictionary<Vector2, int> coordsToIndex;
 
     private struct Bush
     {
@@ -45,15 +46,19 @@ public class PlayerMover : MonoBehaviour {
         if(PlayerMover.firstRun)
         {
             PlayerMover.firstRun = false;
+            PlayerMover.coord = new Vector3(0, 0, 0);
+            transform.position = new Vector3(0, 0, 0);
             PlayerMover.bushes = new Bush[numBushes];
-            PlayerMover.slimeCoords = new Vector2[slimePrefabs.Length];
-            PlayerMover.slimeActives = new bool[slimePrefabs.Length];
-            for (int i = 0; i < slimePrefabs.Length; i++)
+            PlayerMover.slimeCoords = new Vector2[numSlimes];
+            PlayerMover.slimeActives = new bool[numSlimes];
+            PlayerMover.slimeTypes = new int[numSlimes];
+            PlayerMover.coordsToIndex = new Dictionary<Vector2, int>();
+            for (int i = 0; i < numSlimes; i++)
             {
-                // Find location on the screen to spawn a slime
+                // Find location on the map to spawn a slime
                 tmpLoc = new Vector3(Random.Range(slimeSpawnMins.x, slimeSpawnMaxs.x), Random.Range(slimeSpawnMins.y, slimeSpawnMaxs.y), 0f);
-                // Set slime coordinates to the world equivalent of that screen position
-                PlayerMover.slimeCoords[i] = tmpLoc; // Camera.main.ScreenToWorldPoint(tmpLoc);
+                // Set slime coordinates to that location
+                PlayerMover.slimeCoords[i] = tmpLoc; 
                 // Prevent slime from spawning inside another collider
                 while (Physics2D.OverlapCircle(PlayerMover.slimeCoords[i],0f))
                 {
@@ -62,6 +67,10 @@ public class PlayerMover : MonoBehaviour {
                 }
                 // Set slime to active so it spawns into the game
                 PlayerMover.slimeActives[i]= true;
+                // Set slime type so it remains the same color between loads
+                PlayerMover.slimeTypes[i] = Random.Range(0, slimePrefabs.Length);
+                // Add slime to dictionary for later lookup
+                PlayerMover.coordsToIndex.Add(PlayerMover.slimeCoords[i], i);
             }
             for (int i = 0; i < numBushes; i++)
             {
@@ -76,23 +85,17 @@ public class PlayerMover : MonoBehaviour {
                     tmpLoc = new Vector3(Random.Range(Screen.width * 0.1f, Screen.width * 0.9f), Random.Range(Screen.height * 0.1f, Screen.height * 0.9f), 0f);
                     PlayerMover.bushes[i].coord = Camera.main.ScreenToWorldPoint(tmpLoc);
                 }
+                // Set bush type so it remains the same between loads
                 PlayerMover.bushes[i].type = Random.Range(0, bushPrefabs.Length);
             }
         }
         
-        nameToIndex.Add("BlueOverworld(Clone)", 0);
-        nameToIndex.Add("GrayOverworld(Clone)", 1);
-        nameToIndex.Add("GreenOverworld(Clone)", 2);
-        nameToIndex.Add("PurpleOverworld(Clone)", 3);
-        nameToIndex.Add("RedOverworld(Clone)", 4);
-        nameToIndex.Add("YellowOverworld(Clone)", 5);
-
         // Instantiate slimes
-        for (int i = 0; i < slimePrefabs.Length; i++)
+        for (int i = 0; i < numSlimes; i++)
         {
             if (PlayerMover.slimeActives[i])
             {
-                Instantiate(slimePrefabs[i],
+                Instantiate(slimePrefabs[PlayerMover.slimeTypes[i]],
                             PlayerMover.slimeCoords[i],
                             Quaternion.identity);
             }
@@ -111,7 +114,7 @@ public class PlayerMover : MonoBehaviour {
 
         // Check for victory condition
         bool victory = true;
-        for (int i = 0; i < slimePrefabs.Length; i++)
+        for (int i = 0; i < numSlimes; i++)
         {
             if (PlayerMover.slimeActives[i])
             {
@@ -133,9 +136,15 @@ public class PlayerMover : MonoBehaviour {
         {
             // Launch puzzle game
             PlayerMover.coord = gameObject.transform.position;
-            PlayerMover.slimeActives[nameToIndex[collision.name]] = false;
+            PlayerMover.slimeActives[PlayerMover.coordsToIndex[collision.transform.position]] = false;
             Destroy(collision.gameObject);
             SceneManager.LoadScene("Puzzle");
+        }
+
+        if(collision.tag == "Bed")
+        {
+            // Restore player health
+            PuzzleController.playerHealth = PuzzleController.maxHealth;
         }
     }
 
