@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 
 public class PlayerMover : MonoBehaviour {
 
@@ -13,7 +14,9 @@ public class PlayerMover : MonoBehaviour {
     public Vector2 slimeSpawnMaxs; // 21, 20
     public GameObject[] bushPrefabs;
     public int numBushes;
-    
+
+    public Text healthRemainingText;
+    public Text slimesRemainingText;
 
     private Animator anim;
     private Rigidbody2D rb2d;
@@ -26,6 +29,7 @@ public class PlayerMover : MonoBehaviour {
     private static bool[] slimeActives;
     private static int[] slimeTypes;
     private static Dictionary<Vector2, int> coordsToIndex;
+    private static int slimesKilled;
 
     private struct Bush
     {
@@ -53,6 +57,7 @@ public class PlayerMover : MonoBehaviour {
             PlayerMover.slimeActives = new bool[numSlimes];
             PlayerMover.slimeTypes = new int[numSlimes];
             PlayerMover.coordsToIndex = new Dictionary<Vector2, int>();
+            PlayerMover.slimesKilled = 0;
             for (int i = 0; i < numSlimes; i++)
             {
                 // Find location on the map to spawn a slime
@@ -89,7 +94,10 @@ public class PlayerMover : MonoBehaviour {
                 PlayerMover.bushes[i].type = Random.Range(0, bushPrefabs.Length);
             }
         }
-        
+
+        // Update text boxes
+        UpdateText();
+
         // Instantiate slimes
         for (int i = 0; i < numSlimes; i++)
         {
@@ -128,7 +136,11 @@ public class PlayerMover : MonoBehaviour {
         }
     }
 
-
+    private void UpdateText()
+    {
+        healthRemainingText.text = PuzzleController.playerHealth + "/" + PuzzleController.maxHealth + " HP";
+        slimesRemainingText.text = PlayerMover.slimesKilled + "/" + numSlimes + " Slimes";
+    }
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
@@ -137,6 +149,8 @@ public class PlayerMover : MonoBehaviour {
             // Launch puzzle game
             PlayerMover.coord = gameObject.transform.position;
             PlayerMover.slimeActives[PlayerMover.coordsToIndex[collision.transform.position]] = false;
+            PlayerMover.slimesKilled++;
+            UpdateText();
             Destroy(collision.gameObject);
             SceneManager.LoadScene("Puzzle");
         }
@@ -145,6 +159,7 @@ public class PlayerMover : MonoBehaviour {
         {
             // Restore player health
             PuzzleController.playerHealth = PuzzleController.maxHealth;
+            UpdateText();
         }
     }
 
