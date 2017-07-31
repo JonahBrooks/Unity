@@ -109,7 +109,6 @@ public class MetalDeer : MonoBehaviour {
             line_length = lines[0].Length / 4;
             foreach(string line in lines)
             {
-                Debug.Log(line_length);
                 for (int i = 0; i < line.Length; i++)
                 {
                     raw_map.Enqueue(line[i]);
