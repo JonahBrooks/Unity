@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -93,24 +94,7 @@ public class MetalDeer : MonoBehaviour {
             rating = 101;
         }
 
-        // Load map from code
-        public Map(int index)
-        {
-            int s = 16 * 9;
-            map = new Unit[s];
-            line_length = 16;
-            regenerate_map();
-            rating = 101;
-            for(int i = 0; i < s; i++)
-            {
-                map[i].c = Maps.maps[index,i];
-                map[i] = new Unit(map[i].c);
-            }
-
-
-
-        }
-
+       
         // Loads a map from a file
         public Map(string file_name)
         {
@@ -119,12 +103,13 @@ public class MetalDeer : MonoBehaviour {
             int raw_map_size;
             Queue<Unit> new_map = new Queue<Unit>();
 
-
-            string[] lines = System.IO.File.ReadAllLines(file_name);
+            TextAsset txtAsset = (TextAsset)Resources.Load(file_name, typeof(TextAsset));
+            string [] lines = Regex.Split(txtAsset.text, "\n|\r|\n\r");
             
+            line_length = lines[0].Length / 4;
             foreach(string line in lines)
             {
-                line_length = line.Length / 4;
+                Debug.Log(line_length);
                 for (int i = 0; i < line.Length; i++)
                 {
                     raw_map.Enqueue(line[i]);
@@ -832,26 +817,13 @@ public class MetalDeer : MonoBehaviour {
     // Use this for initialization
     void Start () {
         string map_string;
-        //For WebGL
-        //switch (difficulty)
-        //{
-        //    case 70:
-        //        map_num = Random.Range(0, 100);
-        //        break;
-        //    case 50:
-        //        map_num = Random.Range(100, 200);
-        //        break;
-        //    case 30:
-        //        map_num = Random.Range(200, 300);
-        //        break;
-        //}
-        // For PC
+        
         map_num = Random.Range(0, 100);
 
-        map_string = "Assets/Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
+        map_string = "Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
+        
         // Fetch new map
-        //current_map = new Map(map_num); // For WebGL
-        current_map = new Map(map_string); // For PC
+        current_map = new Map(map_string);
         // Position deer and exit correctly for new map
         current_map.deeri = 0;
         current_map.deerx = 0;
@@ -959,24 +931,9 @@ public class MetalDeer : MonoBehaviour {
         // The player won
         if(move_result == 1)
         {
-            // For WebGL
-            //switch (difficulty)
-            //{
-            //    case 70:
-            //        map_num = Random.Range(0, 100);
-            //        break;
-            //    case 50:
-            //        map_num = Random.Range(100, 200);
-            //        break;
-            //    case 30:
-            //        map_num = Random.Range(200, 300);
-            //        break;
-            //}
-            // For PC
             map_num = Random.Range(0,100);
 
-            map_string = "Assets/Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
-            //Debug.Log(map_string);
+            map_string = "Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
             // Position deer and exit correctly for new map  
             current_map.deeri = 0;
             current_map.deerx = 0;
@@ -988,9 +945,7 @@ public class MetalDeer : MonoBehaviour {
             current_map.map[current_map.exiti].c = 'X';
             current_map.map[current_map.exiti].id = Unit.exit.id;
             // Fetch new map
-            //current_map = new Map(map_num); // For WebGL
-            current_map = new Map(map_string); // For PC
-
+            current_map = new Map(map_string);
         }
         // The player lost
         if(move_result == -1)
@@ -998,7 +953,7 @@ public class MetalDeer : MonoBehaviour {
             SceneManager.LoadScene("GameOver");
         }
 
-       // text_map(current_map);
+       // text_map(current_map); // For debugging
 
         for (int i = 0; i < current_map.size(); i++)
         {
