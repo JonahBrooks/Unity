@@ -746,7 +746,7 @@ Unit Map::update_map(int x, int y)
 			// Fill vision line to the left
 			vision_index = 1;
 			next_tile = get_element(u.x - vision_index, u.y).c;
-			while (next_tile == ' ')
+			while (next_tile == ' ' || next_tile == 'H')
 			{
 				map[convert_to_index(u.x - vision_index, u.y)].c = 'H';
 				map[convert_to_index(u.x - vision_index, u.y)].id = u.id;
@@ -758,7 +758,7 @@ Unit Map::update_map(int x, int y)
 			// Fill vision line to the bottom
 			vision_index = 1;
 			next_tile = get_element(u.x, u.y + vision_index).c;
-			while (next_tile == ' ')
+			while (next_tile == ' '|| next_tile == 'H')
 			{
 				map[convert_to_index(u.x, u.y + vision_index)].c = 'H';
 				map[convert_to_index(u.x, u.y + vision_index)].id = u.id;
@@ -770,7 +770,7 @@ Unit Map::update_map(int x, int y)
 			// Fill vision line to the right
 			vision_index = 1;
 			next_tile = get_element(u.x + vision_index, u.y).c;
-			while (next_tile == ' ')
+			while (next_tile == ' '|| next_tile == 'H')
 			{
 				map[convert_to_index(u.x + vision_index, u.y)].c = 'H';
 				map[convert_to_index(u.x + vision_index, u.y)].id = u.id;
@@ -782,7 +782,7 @@ Unit Map::update_map(int x, int y)
 			// Fill vision line to the top
 			vision_index = 1;
 			next_tile = get_element(u.x, u.y - vision_index).c;
-			while (next_tile == ' ')
+			while (next_tile == ' '|| next_tile == 'H')
 			{
 				map[convert_to_index(u.x, u.y - vision_index)].c = 'H';
 				map[convert_to_index(u.x, u.y - vision_index)].id = u.id;
@@ -812,91 +812,91 @@ void Map::save_map(string name)
 }
 
 
-string Map::toString()
-{
-  stringstream toReturn;
-
-  toReturn << "{";
-
-  for(int i =0; i < size(); i++)
-  {
-    toReturn << "'" << map[i].c << "',";
-  }
-
-  toReturn << "},\n";
-
-  return toReturn.str();
-
-}
-
-
 //string Map::toString()
 //{
-//	// FMap legend:
-//	//  'D ' is the deer
-//	//  'B ' is a block
-//	//  'W*' is a wolf going in * direction ( * = {u,d,l,r} )
-//	//  'H*' is a hunter going in * direction
-//	//  'Ex' is the exit
+//  stringstream toReturn;
 //
-//	// Map legend:
-//	//  'D' is the deer
-//	//  'B' is a block
-//	//  '2' is a wolf going up, 'S' is a wolf going down, 'E' is a wolf going right, 'Q' is a wolf going left
-//	//  'Y' is a hunter going up, 'N' is a hunter going down, 'J' is a hunter going right, 'G' is a hunter going left
-//	//  'X' is the exit
+//  toReturn << "{";
 //
-//	stringstream toReturn;
-//	
-//	for (int i = 0; i < size(); i++)
-//	{
-//		switch (map[i].c)
-//		{
-//		case 'D':
-//			toReturn << "[D ]";
-//			break;
-//		case 'B':
-//			toReturn << "[B ]";
-//			break;
-//		case '2':
-//			toReturn << "[Wu]";
-//			break;
-//		case 'S':
-//			toReturn << "[Wd]";
-//			break;
-//		case 'Q':
-//			toReturn << "[Wl]";
-//			break;
-//		case 'E':
-//			toReturn << "[Wr]";
-//			break;
-//		case 'Y':
-//			toReturn << "[Hu]";
-//			break;
-//		case 'N':
-//			toReturn << "[Hd]";
-//			break;
-//		case 'G':
-//			toReturn << "[Hl]";
-//			break;
-//		case 'J':
-//			toReturn << "[Hr]";
-//			break;
-//		case 'X':
-//			toReturn << "[Ex]";
-//			break;
-//    case ' ':
-//      toReturn << "[  ]";
-//      break;
-//		}
+//  for(int i =0; i < size(); i++)
+//  {
+//    toReturn << "'" << map[i].c << "',";
+//  }
 //
-//		if ((i + 1) % (line_length) == 0)
-//		{
-//			toReturn << endl;
-//		}
-//	}
-//	return toReturn.str();
+//  toReturn << "},\n";
+//
+//  return toReturn.str();
+//
 //}
+
+
+string Map::toString()
+{
+	// FMap legend:
+	//  'D ' is the deer
+	//  'B ' is a block
+	//  'W*' is a wolf going in * direction ( * = {u,d,l,r} )
+	//  'H*' is a hunter going in * direction
+	//  'Ex' is the exit
+
+	// Map legend:
+	//  'D' is the deer
+	//  'B' is a block
+	//  '2' is a wolf going up, 'S' is a wolf going down, 'E' is a wolf going right, 'Q' is a wolf going left
+	//  'Y' is a hunter going up, 'N' is a hunter going down, 'J' is a hunter going right, 'G' is a hunter going left
+	//  'X' is the exit
+
+	stringstream toReturn;
+	
+	for (int i = 0; i < size(); i++)
+	{
+		switch (map[i].c)
+		{
+		case 'D':
+			toReturn << "[D ]";
+			break;
+		case 'B':
+			toReturn << "[B ]";
+			break;
+		case '2':
+			toReturn << "[Wu]";
+			break;
+		case 'S':
+			toReturn << "[Wd]";
+			break;
+		case 'Q':
+			toReturn << "[Wl]";
+			break;
+		case 'E':
+			toReturn << "[Wr]";
+			break;
+		case 'Y':
+			toReturn << "[Hu]";
+			break;
+		case 'N':
+			toReturn << "[Hd]";
+			break;
+		case 'G':
+			toReturn << "[Hl]";
+			break;
+		case 'J':
+			toReturn << "[Hr]";
+			break;
+		case 'X':
+			toReturn << "[Ex]";
+			break;
+    case ' ':
+      toReturn << "[  ]";
+      break;
+		}
+
+		if ((i + 1) % (line_length) == 0)
+		{
+			toReturn << endl;
+		}
+	}
+	return toReturn.str();
+}
 
 
 
@@ -1014,10 +1014,10 @@ int play(bool player, Map map)
 	stringstream input;
 	int rnd;
 	int moves = 0;
-	int wchance = 25;
-	int achance = 25;
-	int schance = 25;
-	int dchance = 25;
+	int wchance = 15;
+	int achance = 15;
+	int schance = 35;
+	int dchance = 35;
 	int wvalid = 0;
 	int avalid = 0;
 	int svalid = 0;
@@ -1044,10 +1044,10 @@ int play(bool player, Map map)
 		dresult = move(false, 'd', test);
 
 		// Reset random chances
-		wchance = 25;
-		achance = 25;
-		schance = 25;
-		dchance = 25;
+		wchance = 15;
+		achance = 15;
+		schance = 35;
+		dchance = 35;
 
 		if (wresult < 0) // moving w will lose or is invalid
 		{
@@ -1166,7 +1166,7 @@ int play(bool player, Map map)
 		if (player && move_result == 0) map.print_map();
 
 		// Stall out if generated moves is empty
-		if (player == false && (moves > 1000)) break;  // Ran out of moves; stall out
+		if (player == false && (moves > 10000)) break;  // Ran out of moves; stall out
 	}
 	//if(move_result < 0) cout << "Move result " << move_result << " chances: " << wchance << " " << achance << " " << schance << " " << dchance << endl;
 	if (move_result == -1) moves = -1;
@@ -1181,7 +1181,7 @@ int main()
   // Note, mu and theta must be equal
 	int mu = 6;
 	int theta = 6;
-	int initial_mutations = 15;
+	int initial_mutations = 7;
 	vector<Map> maps(mu + theta);
 	Map map;
   string map_name_base;
@@ -1194,7 +1194,7 @@ int main()
 	int num_tries = 100;
 	int wins = 0;
   int num_maps = 100;
-	Map::ideal = 30;
+	Map::ideal = 70;
 	srand(time(NULL));
 
 	bool map_found = false;
@@ -1244,7 +1244,7 @@ int main()
         map_name_ss.str("");
         map_name_ss << map_name_base << map_num;
         cout << map_name_ss.str() << " found!\n";
-        map.save_map("Maps");
+        map.save_map(map_name_ss.str());
         map_num++;
         
         // Reset this map and continue

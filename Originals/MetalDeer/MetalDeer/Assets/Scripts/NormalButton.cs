@@ -7,7 +7,7 @@ public class NormalButton : MonoBehaviour {
 
     public void OnClick()
     {
-        MetalDeer.difficulty = 50;
+        MetalDeer.difficulty = 70;
         SceneManager.LoadScene("MetalDeer");
     }
 

@@ -7,7 +7,7 @@ public class HardButton : MonoBehaviour {
 
     public void OnClick()
     {
-        MetalDeer.difficulty = 30;
+        MetalDeer.difficulty = 50;
         SceneManager.LoadScene("MetalDeer");
     }
 

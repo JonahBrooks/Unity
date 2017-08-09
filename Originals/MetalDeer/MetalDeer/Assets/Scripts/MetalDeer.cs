@@ -21,14 +21,15 @@ public class MetalDeer : MonoBehaviour {
     public GameObject exit_prefab;
     public GameObject ground_prefab;
 
-    public Text notification_text;
-    public static int difficulty = 70; // 30, 50, 70
+    public Text level_text;
+    public static int difficulty = 70; // 50, 70, 90
+    public static SaveData saveData;
 
 
     private GameObject[] model_map;
     private GameObject[] new_model_map;
     private Map current_map;
-    private int map_num = 50; // 0-99
+    private int map_num = 0; // 0-99
     private int last_move_angle = 90;
 
 
@@ -67,7 +68,7 @@ public class MetalDeer : MonoBehaviour {
     // Private class for staring map information
     private class Map : IComparable
     {
-        public static float ideal = 30;
+        public static float ideal = 50;
         public int line_length;
         public int deeri;
         public int deerx;
@@ -332,7 +333,7 @@ public class MetalDeer : MonoBehaviour {
             
                 switch (u.c)
                 {
-                    case 'Q':
+                    case 'Q': // Wolf left
                         next_tile = get_element(u.x - 1, u.y).c;
                         if (next_tile != ' ' && next_tile != 'H')
                         {
@@ -347,7 +348,7 @@ public class MetalDeer : MonoBehaviour {
                             map[convert_to_index(u.x, u.y)].id = Unit.space.id;
                         }
                         break;
-                    case 'S':
+                    case 'S': // Wolf down
                         next_tile = get_element(u.x, u.y + 1).c;
                         if (next_tile != ' ' && next_tile != 'H')
                         {
@@ -362,7 +363,7 @@ public class MetalDeer : MonoBehaviour {
                             map[convert_to_index(u.x, u.y)].id = Unit.space.id;
                         }
                         break;
-                    case 'E':
+                    case 'E': // Wolf right
                         next_tile = get_element(u.x + 1, u.y).c;
                         if (next_tile != ' ' && next_tile != 'H')
                         {
@@ -377,7 +378,7 @@ public class MetalDeer : MonoBehaviour {
                             map[convert_to_index(u.x, u.y)].id = Unit.space.id;
                         }
                         break;
-                    case '2':
+                    case '2': // Wolf up
                         next_tile = get_element(u.x, u.y - 1).c;
                         if (next_tile != ' ' && next_tile != 'H')
                         {
@@ -392,7 +393,7 @@ public class MetalDeer : MonoBehaviour {
                             map[convert_to_index(u.x, u.y)].id = Unit.space.id;
                         }
                         break;
-                    case 'G':
+                    case 'G': // Hunter left
                         next_tile = get_element(u.x - 1, u.y).c;
                         if (next_tile != ' ' && next_tile != 'H')
                         {
@@ -409,7 +410,7 @@ public class MetalDeer : MonoBehaviour {
                             q3.Enqueue(map[convert_to_index(u.x - 1, u.y)]);
                         }
                         break;
-                    case 'N':
+                    case 'N': // Hunter down
                         next_tile = get_element(u.x, u.y + 1).c;
                         if (next_tile != ' ' && next_tile != 'H')
                         {
@@ -426,7 +427,7 @@ public class MetalDeer : MonoBehaviour {
                             q3.Enqueue(map[convert_to_index(u.x, u.y + 1)]);
                         }
                         break;
-                    case 'J':
+                    case 'J': // Hunter right
                         next_tile = get_element(u.x + 1, u.y).c;
                         if (next_tile != ' ' && next_tile != 'H')
                         {
@@ -443,7 +444,7 @@ public class MetalDeer : MonoBehaviour {
                             q3.Enqueue(map[convert_to_index(u.x + 1, u.y)]);
                         }
                         break;
-                    case 'Y':
+                    case 'Y': // Hunter up
                         next_tile = get_element(u.x, u.y - 1).c;
                         if (next_tile != ' ' && next_tile != 'H')
                         {
@@ -618,7 +619,7 @@ public class MetalDeer : MonoBehaviour {
                         // Fill vision line to the left
                         vision_index = 1;
                         next_tile = get_element(u.x - vision_index, u.y).c;
-                        while (next_tile == ' ')
+                        while (next_tile == ' ' || next_tile == 'H')
                         {
                             map[convert_to_index(u.x - vision_index, u.y)].c = 'H';
                             map[convert_to_index(u.x - vision_index, u.y)].id = u.id;
@@ -630,7 +631,7 @@ public class MetalDeer : MonoBehaviour {
                         // Fill vision line to the bottom
                         vision_index = 1;
                         next_tile = get_element(u.x, u.y + vision_index).c;
-                        while (next_tile == ' ')
+                        while (next_tile == ' ' || next_tile == 'H')
                         {
                             map[convert_to_index(u.x, u.y + vision_index)].c = 'H';
                             map[convert_to_index(u.x, u.y + vision_index)].id = u.id;
@@ -642,7 +643,7 @@ public class MetalDeer : MonoBehaviour {
                         // Fill vision line to the right
                         vision_index = 1;
                         next_tile = get_element(u.x + vision_index, u.y).c;
-                        while (next_tile == ' ')
+                        while (next_tile == ' ' || next_tile == 'H')
                         {
                             map[convert_to_index(u.x + vision_index, u.y)].c = 'H';
                             map[convert_to_index(u.x + vision_index, u.y)].id = u.id;
@@ -654,7 +655,7 @@ public class MetalDeer : MonoBehaviour {
                         // Fill vision line to the top
                         vision_index = 1;
                         next_tile = get_element(u.x, u.y - vision_index).c;
-                        while (next_tile == ' ')
+                        while (next_tile == ' ' || next_tile == 'H')
                         {
                             map[convert_to_index(u.x, u.y - vision_index)].c = 'H';
                             map[convert_to_index(u.x, u.y - vision_index)].id = u.id;
@@ -800,24 +801,51 @@ public class MetalDeer : MonoBehaviour {
     }
 
 
+    // Used for debugging; shows the raw text map on the screen
     void text_map(Map map)
     {
-        notification_text.text = "";
+        level_text.text = "";
         for (int i = 0; i < map.size(); i++)
         {
-            notification_text.text += map.map[i].c;
+            level_text.text += map.map[i].c;
             if ((i + 1) % map.line_length == 0)
             {
-                notification_text.text += "\n";
+                level_text.text += "\n";
             }
         }
     }
+    
+
 
     // Use this for initialization
     void Start () {
         string map_string;
-        
-        map_num = Random.Range(0, 100);
+
+        saveData = SaveData.Load();
+
+        // If there was no save data
+        if(saveData == null)
+        {
+            // Create a new empty save file
+            saveData = new SaveData();
+            SaveData.Save(saveData);
+        }
+
+
+        if(difficulty == 90) // Easy
+        {
+            map_num = saveData.EasyLevel;
+        }
+        else if (difficulty == 70) // Normal
+        {
+            map_num = saveData.NormalLevel;
+        }
+        else // Hard
+        {
+            map_num = saveData.HardLevel;
+        }
+
+        level_text.text = "Map " + (map_num + 1) + "/100";
 
         map_string = "Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
         
@@ -833,6 +861,8 @@ public class MetalDeer : MonoBehaviour {
         current_map.convert_from_index(out current_map.exitx, out current_map.exity, current_map.exiti);
         current_map.map[current_map.exiti].c = 'X';
         current_map.map[current_map.exiti].id = Unit.exit.id;
+
+        
 
         model_map = new GameObject[current_map.size()];
         int x, y, z;
@@ -930,7 +960,35 @@ public class MetalDeer : MonoBehaviour {
         // The player won
         if(move_result == 1)
         {
-            map_num = Random.Range(0,100);
+            if (difficulty == 90) // Easy
+            {
+                // Advance to the next level
+                map_num = ++saveData.EasyLevel;
+                if(saveData.EasyLevel >= 100)
+                {   // Don't overflow the level count
+                    saveData.EasyLevel = 0;
+                }
+            }
+            else if (difficulty == 70) // Normal
+            {
+                map_num = ++saveData.NormalLevel;
+                if (saveData.NormalLevel >= 100)
+                {
+                    saveData.NormalLevel = 0;
+                }
+            }
+            else // Hard
+            {
+                map_num = ++saveData.HardLevel;
+                if (saveData.HardLevel >= 100)
+                {
+                    saveData.HardLevel = 0;
+                }
+            }
+
+            SaveData.Save(saveData); // Update the save file
+
+            level_text.text = "Map " + (map_num + 1) + "/100";
 
             map_string = "Maps/polar_maps/" + difficulty + "/map" + difficulty + "_" + map_num;
             // Position deer and exit correctly for new map  
@@ -952,8 +1010,8 @@ public class MetalDeer : MonoBehaviour {
             SceneManager.LoadScene("GameOver");
         }
 
-       // text_map(current_map); // For debugging
-
+        //text_map(current_map); // For debugging
+       
         for (int i = 0; i < current_map.size(); i++)
         {
             current_map.convert_from_index(out x, out z, i);

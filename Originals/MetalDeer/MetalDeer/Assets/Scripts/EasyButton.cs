@@ -7,7 +7,7 @@ public class EasyButton : MonoBehaviour {
 
     public void OnClick()
     {
-        MetalDeer.difficulty = 70;
+        MetalDeer.difficulty = 90;
         SceneManager.LoadScene("MetalDeer");
     }
 
