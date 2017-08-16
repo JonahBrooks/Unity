@@ -59,12 +59,24 @@ public class PlayerController : MonoBehaviour {
         }
 
         // Jump
-        if (!isDead && Input.GetButtonDown("Jump") && grounded)
+        if (!isDead && Input.GetButton("Jump") && grounded)
         {
             anim.SetTrigger("ninjaGirlJump");
-            jumpTime = minJumpDuration;
+            // Only reset jump time if a new jump is taking place
+            if (grounded)
+            {
+                jumpTime = minJumpDuration;
+            }
             isJumping = true;
             rb2d.AddForce((Vector2.up * jumpPower));
+        }
+        else if (Input.GetButton("Jump") && !grounded)
+        {
+            Debug.Log("Tried to jump but wasn't grounded");
+        }
+        else if (Input.GetButton("Jump"))
+        {
+            Debug.Log("Tried to jump but ???");
         }
         // Count down min jump time
         if(jumpTime > 0 && isJumping)
