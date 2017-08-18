@@ -30,6 +30,7 @@ public class PlayerController : MonoBehaviour {
         rb2d = gameObject.GetComponent<Rigidbody2D>();
         anim = gameObject.GetComponent<Animator>();
         sprite = gameObject.GetComponent<SpriteRenderer>();
+        jumpTime = minJumpDuration;
 	}
 	
 	// Update is called once per frame
@@ -59,7 +60,7 @@ public class PlayerController : MonoBehaviour {
         }
 
         // Jump
-        if (!isDead && Input.GetButton("Jump") && grounded)
+        if (!isDead && Input.GetButton("Jump") && grounded && jumpTime == minJumpDuration)
         {
             anim.SetTrigger("ninjaGirlJump");
             // Only reset jump time if a new jump is taking place
@@ -90,6 +91,7 @@ public class PlayerController : MonoBehaviour {
             anim.SetTrigger("ninjaGirlLand");
             isJumping = false;
             isGliding = false;
+            jumpTime = minJumpDuration;
         }
 
 
