@@ -1027,9 +1027,9 @@ public class MetalDeer : MonoBehaviour {
     // Resets all the models based on their map positions
     void ResetAllModels()
     {
-        foreach(var m in Model.models)
+        foreach(var m in model_map)
         {
-            Destroy(m.model);
+            Destroy(m);
         }
         Model.models = new List<Model>();
 
