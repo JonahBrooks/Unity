@@ -31,7 +31,51 @@ public class MetalDeer : MonoBehaviour {
     private Map current_map;
     private int map_num = 0; // 0-99
     private int last_move_angle = 90;
+    private bool piecesMoving = false;
 
+
+    // Private class for storing model information
+    private class Model
+    {
+        public int x, y, z; // Where this model was before the update
+        public int newx, newy, newz; // Where this model will be after the update
+
+        public char c; // What type this model was
+        public char newc; // What type this model will be
+
+        public int angleFacing;
+        public int newAngleFacing;
+        public GameObject model;
+
+        public static List<Model> models;
+
+        public Model(char c, int x, int y, int z)
+        {
+            this.c = c;
+            this.x = x;
+            this.y = y;
+            this.z = z;
+            newc = c;
+            newx = x;
+            newy = y;
+            newz = z;
+            angleFacing = 0;
+            newAngleFacing = 0;
+        }
+
+        public static Model GetModelByOldXYZ(int oldx, int oldy, int oldz)
+        {
+            foreach(var m in models)
+            {
+                if(m.x == oldx && m.y == oldy && m.z == oldz)
+                {
+                    return m;
+                }
+            }
+            return null;
+        }
+
+    }
 
     // Private class for storing unit information
     private class Unit
@@ -65,7 +109,7 @@ public class MetalDeer : MonoBehaviour {
         }
     }
 
-    // Private class for staring map information
+    // Private class for storing map information
     private class Map : IComparable
     {
         public static float ideal = 50;
@@ -229,7 +273,7 @@ public class MetalDeer : MonoBehaviour {
             return i;
         }
 
-        // Returns the x,y coordinates repressened by index i
+        // Returns the x,y coordinates represented by index i
         public void convert_from_index(out int x, out int y, int i)
         {
             x = i % (line_length);
@@ -342,6 +386,7 @@ public class MetalDeer : MonoBehaviour {
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newx -= 1;
                             map[convert_to_index(u.x - 1, u.y)].c = 'Q';
                             map[convert_to_index(u.x - 1, u.y)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -357,6 +402,7 @@ public class MetalDeer : MonoBehaviour {
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newz += 1;
                             map[convert_to_index(u.x, u.y + 1)].c = 'S';
                             map[convert_to_index(u.x, u.y + 1)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -372,6 +418,7 @@ public class MetalDeer : MonoBehaviour {
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newx += 1;
                             map[convert_to_index(u.x + 1, u.y)].c = 'E';
                             map[convert_to_index(u.x + 1, u.y)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -387,6 +434,7 @@ public class MetalDeer : MonoBehaviour {
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newz -= 1;
                             map[convert_to_index(u.x, u.y - 1)].c = '2';
                             map[convert_to_index(u.x, u.y - 1)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -402,6 +450,7 @@ public class MetalDeer : MonoBehaviour {
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newx -= 1;
                             map[convert_to_index(u.x - 1, u.y)].c = 'G';
                             map[convert_to_index(u.x - 1, u.y)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -419,6 +468,7 @@ public class MetalDeer : MonoBehaviour {
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newz += 1;
                             map[convert_to_index(u.x, u.y + 1)].c = 'N';
                             map[convert_to_index(u.x, u.y + 1)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -436,6 +486,7 @@ public class MetalDeer : MonoBehaviour {
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newx += 1;
                             map[convert_to_index(u.x + 1, u.y)].c = 'J';
                             map[convert_to_index(u.x + 1, u.y)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -453,6 +504,7 @@ public class MetalDeer : MonoBehaviour {
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newz -= 1;
                             map[convert_to_index(u.x, u.y - 1)].c = 'Y';
                             map[convert_to_index(u.x, u.y - 1)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -475,10 +527,12 @@ public class MetalDeer : MonoBehaviour {
                         if (next_tile != ' ' && next_tile != 'H')
                         {
                             // Turn around
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newc = 'E';
                             map[convert_to_index(u.x, u.y)].c = 'E';
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newx -= 1;
                             map[convert_to_index(u.x - 1, u.y)].c = 'Q';
                             map[convert_to_index(u.x - 1, u.y)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -490,10 +544,12 @@ public class MetalDeer : MonoBehaviour {
                         if (next_tile != ' ' && next_tile != 'H')
                         {
                             // Turn around
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newc = '2';
                             map[convert_to_index(u.x, u.y)].c = '2';
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newz += 1;
                             map[convert_to_index(u.x, u.y + 1)].c = 'S';
                             map[convert_to_index(u.x, u.y + 1)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -505,10 +561,12 @@ public class MetalDeer : MonoBehaviour {
                         if (next_tile != ' ' && next_tile != 'H')
                         {
                             // Turn around
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newc = 'Q';
                             map[convert_to_index(u.x, u.y)].c = 'Q';
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newx += 1;
                             map[convert_to_index(u.x + 1, u.y)].c = 'E';
                             map[convert_to_index(u.x + 1, u.y)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -520,10 +578,12 @@ public class MetalDeer : MonoBehaviour {
                         if (next_tile != ' ' && next_tile != 'H')
                         {
                             // Turn around
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newc = 'S';
                             map[convert_to_index(u.x, u.y)].c = 'S';
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newz -= 1;
                             map[convert_to_index(u.x, u.y - 1)].c = '2';
                             map[convert_to_index(u.x, u.y - 1)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -535,12 +595,14 @@ public class MetalDeer : MonoBehaviour {
                         if (next_tile != ' ' && next_tile != 'H')
                         {
                             // Turn around
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newc = 'J';
                             map[convert_to_index(u.x, u.y)].c = 'J';
                             // Prep to draw vision lines
                             q3.Enqueue(map[convert_to_index(u.x, u.y)]);
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newx -= 1;
                             map[convert_to_index(u.x - 1, u.y)].c = 'G';
                             map[convert_to_index(u.x - 1, u.y)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -554,12 +616,14 @@ public class MetalDeer : MonoBehaviour {
                         if (next_tile != ' ' && next_tile != 'H')
                         {
                             // Turn around
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newc = 'Y';
                             map[convert_to_index(u.x, u.y)].c = 'Y';
                             // Prep to draw vision lines
                             q3.Enqueue(map[convert_to_index(u.x, u.y)]);
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newz += 1;
                             map[convert_to_index(u.x, u.y + 1)].c = 'N';
                             map[convert_to_index(u.x, u.y + 1)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -573,12 +637,14 @@ public class MetalDeer : MonoBehaviour {
                         if (next_tile != ' ' && next_tile != 'H')
                         {
                             // Turn around
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newc = 'G';
                             map[convert_to_index(u.x, u.y)].c = 'G';
                             // Prep to draw vision lines
                             q3.Enqueue(map[convert_to_index(u.x, u.y)]);
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newx += 1;
                             map[convert_to_index(u.x + 1, u.y)].c = 'J';
                             map[convert_to_index(u.x + 1, u.y)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -592,12 +658,14 @@ public class MetalDeer : MonoBehaviour {
                         if (next_tile != ' ' && next_tile != 'H')
                         {
                             // Turn around
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newc = 'N';
                             map[convert_to_index(u.x, u.y)].c = 'N';
                             // Prep to draw vision lines
                             q3.Enqueue(map[convert_to_index(u.x, u.y)]);
                         }
                         else
                         {
+                            Model.GetModelByOldXYZ(u.x, 0, u.y).newz -= 1;
                             map[convert_to_index(u.x, u.y - 1)].c = 'Y';
                             map[convert_to_index(u.x, u.y - 1)].id = u.id;
                             map[convert_to_index(u.x, u.y)].c = ' ';
@@ -669,6 +737,9 @@ public class MetalDeer : MonoBehaviour {
             // Move deer
             overlap = get_element(x, y).c;
 
+            // Prepare to move deer model
+            Model.GetModelByOldXYZ(old_x, 0, old_y).newx = x;
+            Model.GetModelByOldXYZ(old_x, 0, old_y).newz = y;
 
             map[convert_to_index(x, y)].c = 'D';
             map[convert_to_index(x, y)].id = Unit.deer.id;
@@ -862,12 +933,8 @@ public class MetalDeer : MonoBehaviour {
         current_map.map[current_map.exiti].c = 'X';
         current_map.map[current_map.exiti].id = Unit.exit.id;
 
-        
-
         model_map = new GameObject[current_map.size()];
-        int x, y, z;
-        y = 0;
-
+        Model.models = new List<Model>();
 
         // Build ground grid
         for(int i = 0; i < 16; i++)
@@ -878,11 +945,102 @@ public class MetalDeer : MonoBehaviour {
             }
         }
 
+        ResetAllModels();
+    }
+	
+    IEnumerator MoveAllPieces()
+    {
+        piecesMoving = true;
 
-        for(int i = 0; i < current_map.size(); i++)
+        float stepsToComplete = 10f;
+
+        float step = 1f / stepsToComplete; ;
+
+        // Rotate deer instantly
+        foreach (var m in Model.models)
+        {
+            if (m.c == 'D')
+            {
+                m.model.transform.eulerAngles = new Vector3(0, last_move_angle, 0);
+            }
+        }
+
+        for (float f = 0; f <= 1; f+= step)
+        {
+            foreach(var m in Model.models)
+            {
+                
+                // Rotate if newc != c
+                if(m.newc != m.c)
+                {
+                    switch (m.newc)
+                    {
+                        case '2':
+                            m.newAngleFacing = 180;
+                            break;
+                        case 'Q':
+                            m.newAngleFacing = -90;
+                            break;
+                        case 'E':
+                            m.newAngleFacing = 90;
+                            break;
+                        case 'S':
+                            m.newAngleFacing = 0;
+                            break;
+                        case 'Y':
+                            m.newAngleFacing = 180;
+                            break;
+                        case 'G':
+                            m.newAngleFacing = -90;
+                            break;
+                        case 'N':
+                            m.newAngleFacing = 0;
+                            break;
+                        case 'J':
+                            m.newAngleFacing = 90;
+                            break;
+                    }
+                }
+                // Rotate everything but the deer
+                if (m.newc != 'D')
+                {
+                    m.model.transform.rotation = Quaternion.Lerp(Quaternion.Euler(0, m.angleFacing, 0), Quaternion.Euler(0, m.newAngleFacing,0), f);
+                }
+                m.model.transform.position = Vector3.MoveTowards(m.model.transform.position, new Vector3(m.newx, m.newy, m.newz), step);
+                m.x = m.newx;
+                m.y = m.newy;
+                m.z = m.newz;
+                m.c = m.newc;
+            }
+            
+            yield return new WaitForSeconds(.005f);
+        }
+
+        // Update the angleFacing, now that they are facing the right angles
+        foreach(var m in Model.models)
+        {
+            m.angleFacing = m.newAngleFacing;
+        }
+        piecesMoving = false;
+    }
+
+    // Resets all the models based on their map positions
+    void ResetAllModels()
+    {
+        foreach(var m in Model.models)
+        {
+            Destroy(m.model);
+        }
+        Model.models = new List<Model>();
+
+        int x, y, z;
+        y = 0;
+
+        for (int i = 0; i < current_map.size(); i++)
         {
             current_map.convert_from_index(out x, out z, i);
-            switch(current_map.get_element(x,z).c)
+
+            switch (current_map.get_element(x, z).c)
             {
                 case ' ':
                     model_map[i] = null;
@@ -921,17 +1079,64 @@ public class MetalDeer : MonoBehaviour {
                     model_map[i] = Instantiate(exit_prefab, new Vector3(x, y, z), Quaternion.identity);
                     break;
             }
+            // Fill the models list with all pieces besides bushes, spaces, and the exit
+            if (current_map.get_element(x, z).c != ' ' && current_map.get_element(x, z).c != 'B' && current_map.get_element(x, z).c != 'X')
+            {
+                Model.models.Add(new Model(current_map.get_element(x, z).c, x, y, z));
+                Model.models[Model.models.Count - 1].model = model_map[i];
+                switch (current_map.get_element(x, z).c)
+                {
+                    case 'D':
+                        Model.models[Model.models.Count - 1].angleFacing = 90;
+                        Model.models[Model.models.Count - 1].newAngleFacing = 90;
+                        break;
+                    case '2':
+                        Model.models[Model.models.Count - 1].angleFacing = 180;
+                        Model.models[Model.models.Count - 1].newAngleFacing = 180;
+                        break;
+                    case 'Q':
+                        Model.models[Model.models.Count - 1].angleFacing = -90;
+                        Model.models[Model.models.Count - 1].newAngleFacing = -90;
+                        break;
+                    case 'E':
+                        Model.models[Model.models.Count - 1].angleFacing = 90;
+                        Model.models[Model.models.Count - 1].newAngleFacing = 90;
+                        break;
+                    case 'S':
+                        Model.models[Model.models.Count - 1].angleFacing = 0;
+                        Model.models[Model.models.Count - 1].newAngleFacing = 0;
+                        break;
+                    case 'Y':
+                        Model.models[Model.models.Count - 1].angleFacing = 180;
+                        Model.models[Model.models.Count - 1].newAngleFacing = 180;
+                        break;
+                    case 'G':
+                        Model.models[Model.models.Count - 1].angleFacing = -90;
+                        Model.models[Model.models.Count - 1].newAngleFacing = -90;
+                        break;
+                    case 'N':
+                        Model.models[Model.models.Count - 1].angleFacing = 0;
+                        Model.models[Model.models.Count - 1].newAngleFacing = 0;
+                        break;
+                    case 'J':
+                        Model.models[Model.models.Count - 1].angleFacing = 90;
+                        Model.models[Model.models.Count - 1].newAngleFacing = 90;
+                        break;
+                }
+            }
         }
     }
-	
+
 	// Update is called once per frame
 	void Update () {
 
-        int x, y, z;
-        y = 0;
-
         int move_result = 0;
+        bool playerMoved = false;
 
+        if(piecesMoving)
+        {
+            return; // Don't allow anything to happen while the pieces are moving
+        }
 
         string map_string;
 
@@ -940,21 +1145,25 @@ public class MetalDeer : MonoBehaviour {
         {
             move_result = move(false, 'w', ref current_map);
             last_move_angle = 180;
+            playerMoved = true;
         }
         if (Input.GetKeyDown("left"))
         {
             move_result = move(false, 'a', ref current_map);
             last_move_angle = -90;
+            playerMoved = true;
         }
         if (Input.GetKeyDown("up"))
         {
             move_result = move(false, 's', ref current_map);
             last_move_angle = 0;
+            playerMoved = true;
         }
         if (Input.GetKeyDown("right"))
         {
             move_result = move(false, 'd', ref current_map);
             last_move_angle = 90;
+            playerMoved = true;
         }
         
         // The player won
@@ -1003,6 +1212,7 @@ public class MetalDeer : MonoBehaviour {
             current_map.map[current_map.exiti].id = Unit.exit.id;
             // Fetch new map
             current_map = new Map(map_string);
+            ResetAllModels();
         }
         // The player lost
         if(move_result == -1)
@@ -1011,50 +1221,11 @@ public class MetalDeer : MonoBehaviour {
         }
 
         //text_map(current_map); // For debugging
-       
-        for (int i = 0; i < current_map.size(); i++)
+
+        if(playerMoved)
         {
-            current_map.convert_from_index(out x, out z, i);
-            Destroy(model_map[i]);
-            switch (current_map.get_element(x, z).c)
-            {
-                case ' ':
-                    model_map[i] = null;
-                    break;
-                case 'D':
-                    model_map[i] = Instantiate(deer_prefab, new Vector3(x, y, z), Quaternion.Euler(0, last_move_angle, 0));
-                    break;
-                case '2':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
-                    break;
-                case 'Q':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
-                    break;
-                case 'E':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
-                    break;
-                case 'S':
-                    model_map[i] = Instantiate(wolf_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
-                    break;
-                case 'Y':
-                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 180, 0));
-                    break;
-                case 'G':
-                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, -90, 0));
-                    break;
-                case 'N':
-                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 0, 0));
-                    break;
-                case 'J':
-                    model_map[i] = Instantiate(tiger_prefab, new Vector3(x, y, z), Quaternion.Euler(0, 90, 0));
-                    break;
-                case 'B':
-                    model_map[i] = Instantiate(tree_prefab, new Vector3(x, y, z), Quaternion.identity);
-                    break;
-                case 'X':
-                    model_map[i] = Instantiate(exit_prefab, new Vector3(x, y, z), Quaternion.identity);
-                    break;
-            }
+            
+            StartCoroutine("MoveAllPieces");
         }
 
 
