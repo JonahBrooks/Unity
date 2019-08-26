@@ -31,6 +31,13 @@ public class BallController : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
+        Debug.Log("Collision!");
+
+        if(collision.transform.CompareTag("Brick"))
+        {
+            Destroy(collision.gameObject);
+        }
+
         // Don't allow the ball to move faster or slower than its given ball speed
         rb.velocity = rb.velocity.normalized * ballSpeed;
     }

@@ -148,7 +148,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 44229812}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.8, y: -3.8, z: 0}
+  m_LocalPosition: {x: -4, y: -3.8, z: 0}
   m_LocalScale: {x: 3, y: 0.5, z: 1}
   m_Children: []
   m_Father: {fileID: 949132961}
@@ -227,7 +227,7 @@ Rigidbody:
   m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 3
 --- !u!1 &212909044
 GameObject:
   m_ObjectHideFlags: 0
@@ -256,7 +256,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 212909044}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 4.8, y: -3.8, z: 0}
+  m_LocalPosition: {x: 4, y: -3.8, z: 0}
   m_LocalScale: {x: 3, y: 0.5, z: 1}
   m_Children: []
   m_Father: {fileID: 949132961}
@@ -335,7 +335,7 @@ Rigidbody:
   m_IsKinematic: 1
   m_Interpolate: 0
   m_Constraints: 0
-  m_CollisionDetection: 2
+  m_CollisionDetection: 3
 --- !u!1 &457681263
 GameObject:
   m_ObjectHideFlags: 0
@@ -399,7 +399,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 482929146}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: -0.95, z: 0}
   m_LocalScale: {x: 0.5, y: 0.5, z: 0.5}
   m_Children: []
   m_Father: {fileID: 1460668677}
@@ -824,6 +824,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 0884d12958f1a954cad7f9b0da03475e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  brickPrefab: {fileID: 6909010344512719434, guid: 279593214c2adb244ae4e7a21affec40,
+    type: 3}
+  brickGridBounds:
+    Left: -8
+    Right: 8
+    Top: 4
+    Bottom: 0
+  xBuffer: 0.1
+  yBuffer: 0.1
+  initialNumberOfBricks: -1
 --- !u!1 &2121320607
 GameObject:
   m_ObjectHideFlags: 0
