@@ -6,16 +6,35 @@ public class BallController : MonoBehaviour
 {
     public float ballSpeed;
     public Vector3 initialTrajectory;
+    public Vector3 initialPosition;
 
-    private Vector3 currentTrajectory;
     private Rigidbody rb;
+    private Vector3 pausedVelocity;
+
+    public void ResetBall()
+    {
+        rb.position = initialPosition;
+        rb.velocity = initialTrajectory.normalized * ballSpeed;
+    }
+
+    public void PauseBall()
+    {
+        pausedVelocity = rb.velocity;
+        rb.isKinematic = true;
+    }
+
+    public void UnpauseBall()
+    {
+        rb.isKinematic = false;
+        rb.velocity = pausedVelocity;
+    }
 
     // Start is called before the first frame update
     void Start()
     {
-        currentTrajectory = initialTrajectory.normalized;
         rb = GetComponent<Rigidbody>();
-        rb.velocity = currentTrajectory * ballSpeed;
+        pausedVelocity = initialTrajectory.normalized * ballSpeed;
+        ResetBall();
     }
 
     // Update is called once per frame
@@ -31,11 +50,18 @@ public class BallController : MonoBehaviour
 
     private void OnCollisionExit(Collision collision)
     {
-        Debug.Log("Collision!");
-
+        // If it hit a brick
         if(collision.transform.CompareTag("Brick"))
         {
-            Destroy(collision.gameObject);
+            // Tell this brick to generate score and become destroyed
+            collision.gameObject.GetComponent<BrickController>().BreakBrick();
+        }
+
+        // If it hit the bottom of the screen
+        if(collision.transform.CompareTag("Bottom"))
+        {
+            // Tell the board controller about the ball hitting the bottom of the screen
+            this.transform.GetComponentInParent<BoardController>().BallOutOfBounds();
         }
 
         // Don't allow the ball to move faster or slower than its given ball speed

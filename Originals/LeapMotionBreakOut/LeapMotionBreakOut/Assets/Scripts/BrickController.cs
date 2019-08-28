@@ -4,6 +4,16 @@ using UnityEngine;
 
 public class BrickController : MonoBehaviour
 {
+
+    // Generates score from this brick then destroys it
+    public void BreakBrick()
+    {
+        // Call the parent object's score increment function
+        this.GetComponentInParent<BrickGridController>().IncrementScore();
+        this.GetComponentInParent<BrickGridController>().numberOfBricksRemaining--;
+        Destroy(this.gameObject);
+    }
+
     // Start is called before the first frame update
     void Start()
     {

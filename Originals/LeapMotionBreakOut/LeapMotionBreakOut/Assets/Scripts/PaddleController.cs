@@ -52,11 +52,8 @@ public class PaddleController : MonoBehaviour
         // Get hands
         List<Hand> rawHands = controller.Frame().Hands;
 
-        //Debug.Log(rawHands.Count);
-
         foreach(Hand hand in rawHands)
         {
-            // TODO: Find some way to ignore other people's hands
             if (hand.IsRight)
             {
                 UpdatePaddleNewPosition(rightPaddle, hand, rightLeapBounds, rightPaddleBounds, out rightNewPosition);
@@ -80,6 +77,7 @@ public class PaddleController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        // Move the paddles into position if the players hands have moved
         if(rightRb.position != rightNewPosition)
         {
             rightRb.MovePosition(Vector3.MoveTowards(rightRb.position, rightNewPosition, movementSpeed * Time.deltaTime));
@@ -90,9 +88,10 @@ public class PaddleController : MonoBehaviour
         }
     }
 
+    // Adjusts the tilt of the paddles based on hand tilt
     private void TiltPaddle(GameObject paddle, Hand hand)
     {
-        Vector3 newNormal = new Vector3(-hand.PalmNormal.x, -hand.PalmNormal.y, 0); // TODO: Did I do z right?
+        Vector3 newNormal = new Vector3(-hand.PalmNormal.x, -hand.PalmNormal.y, 0);
 
         paddle.transform.rotation = Quaternion.LookRotation(Vector3.forward, newNormal);
     }
