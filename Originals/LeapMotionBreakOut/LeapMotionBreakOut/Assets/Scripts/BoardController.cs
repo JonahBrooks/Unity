@@ -52,16 +52,9 @@ public class BoardController : MonoBehaviour
         highScore = 0;
         layingOutBricks = false;
 
-        if(initialNumberOfBricks <= 0)
-        {
-            // Instantiate as many bricks as possible
-            StartCoroutine(LayoutBricks(int.MaxValue));
-        }
-        else
-        {
-            // Instantiate as many bricks as was requested
-            StartCoroutine(LayoutBricks(initialNumberOfBricks));
-        }
+       // Instantiate the requested number of bricks
+        StartCoroutine(LayoutBricks(initialNumberOfBricks));
+    
         // Countdown before the ball goes into play
         StartCoroutine(InitialCountdownCoroutine());
 
@@ -70,8 +63,6 @@ public class BoardController : MonoBehaviour
     private IEnumerator InitialCountdownCoroutine()
     {
         ballController.ResetBall();
-        yield return null;  // Give it one frame to move the ball into the right spot before pausing ball
-
         ballController.PauseBall();
         while(layingOutBricks)
         {
@@ -92,6 +83,10 @@ public class BoardController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            Application.Quit();
+        }
 
     }
 
@@ -123,8 +118,6 @@ public class BoardController : MonoBehaviour
     private IEnumerator BoardClearedCoroutine()
     {
         ballController.ResetBall();
-        yield return null;  // Give it one frame to move the ball into the right spot before pausing ball
-
         ballController.PauseBall();
         brickGridController.score += bonusScoreForClears;
         UpdateUI();
@@ -164,8 +157,6 @@ public class BoardController : MonoBehaviour
     private IEnumerator BallOutOfBoundsCoroutine()
     {
         ballController.ResetBall();
-        yield return null;  // Give it one frame to move the ball into the right spot before pausing ball
-
         ballController.PauseBall();
         brickGridController.ResetScore();
         UpdateUI();
@@ -209,6 +200,11 @@ public class BoardController : MonoBehaviour
     private IEnumerator LayoutBricks(int numberOfBricks)
     {
         layingOutBricks = true; // Make other coroutines wait before countdown
+
+        if(numberOfBricks <= 0)
+        {
+            numberOfBricks = int.MaxValue;
+        }
 
         // Get rid of any bricks currently on the field
         brickGridController.ClearAllBricks();

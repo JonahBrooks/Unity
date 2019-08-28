@@ -13,7 +13,7 @@ public class BallController : MonoBehaviour
 
     public void ResetBall()
     {
-        rb.position = initialPosition;
+        transform.position = initialPosition;
         rb.velocity = initialTrajectory.normalized * ballSpeed;
     }
 
@@ -27,6 +27,11 @@ public class BallController : MonoBehaviour
     {
         rb.isKinematic = false;
         rb.velocity = pausedVelocity;
+    }
+
+    public Vector3 GetBallPosition()
+    {
+        return rb.position;
     }
 
     // Start is called before the first frame update
@@ -45,7 +50,8 @@ public class BallController : MonoBehaviour
 
     private void FixedUpdate()
     {
-
+        // Don't allow the ball to move faster or slower than its given ball speed
+        rb.velocity = rb.velocity.normalized * ballSpeed;
     }
 
     private void OnCollisionExit(Collision collision)
@@ -64,8 +70,6 @@ public class BallController : MonoBehaviour
             this.transform.GetComponentInParent<BoardController>().BallOutOfBounds();
         }
 
-        // Don't allow the ball to move faster or slower than its given ball speed
-        rb.velocity = rb.velocity.normalized * ballSpeed;
     }
 }
 
