@@ -10,11 +10,13 @@ public class BallController : MonoBehaviour
 
     private Rigidbody rb;
     private Vector3 pausedVelocity;
+    private Vector3 lastPosition;
 
     public void ResetBall()
     {
         transform.position = initialPosition;
         rb.velocity = initialTrajectory.normalized * ballSpeed;
+        lastPosition = initialPosition;
     }
 
     public void PauseBall()
@@ -52,6 +54,24 @@ public class BallController : MonoBehaviour
     {
         // Don't allow the ball to move faster or slower than its given ball speed
         rb.velocity = rb.velocity.normalized * ballSpeed;
+
+        // Ignore everything in the 2nd layer (Ignore Raycast)
+        int layerMask = 1 << 2;
+        layerMask = ~layerMask;
+
+        // Calculate the vector of movement since last frame
+        Vector3 movement = rb.position - lastPosition;
+
+        RaycastHit hit;
+        // If the ball passed through something it should have hit
+        if(Physics.Raycast(lastPosition,movement, out hit, movement.magnitude, layerMask))
+        {
+            // Move the ball to the point where it would have collided with something
+            rb.position = hit.point - (movement / movement.magnitude) * GetComponent<SphereCollider>().radius;
+        }
+
+        // Update lastPosition for use next frame
+        lastPosition = rb.position;
     }
 
     private void OnCollisionExit(Collision collision)
@@ -59,6 +79,7 @@ public class BallController : MonoBehaviour
         // If it hit a brick
         if(collision.transform.CompareTag("Brick"))
         {
+            // TODO: Check velocity; if it is greater than ballSpeed, don't break the brick?
             // Tell this brick to generate score and become destroyed
             collision.gameObject.GetComponent<BrickController>().BreakBrick();
         }
