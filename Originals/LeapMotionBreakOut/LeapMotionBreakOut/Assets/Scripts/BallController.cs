@@ -79,7 +79,6 @@ public class BallController : MonoBehaviour
         // If it hit a brick
         if(collision.transform.CompareTag("Brick"))
         {
-            // TODO: Check velocity; if it is greater than ballSpeed, don't break the brick?
             // Tell this brick to generate score and become destroyed
             collision.gameObject.GetComponent<BrickController>().BreakBrick();
         }

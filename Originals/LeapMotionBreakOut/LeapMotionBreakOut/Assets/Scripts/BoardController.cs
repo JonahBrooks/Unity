@@ -60,6 +60,7 @@ public class BoardController : MonoBehaviour
 
     }
 
+    // A coroutine for resetting the ball, laying out the bricks, then counting down from 3 before unpausing the ball
     private IEnumerator InitialCountdownCoroutine()
     {
         ballController.ResetBall();
