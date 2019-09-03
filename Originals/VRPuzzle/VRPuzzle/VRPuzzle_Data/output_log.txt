@@ -4,8 +4,8 @@ Direct3D:
     Version:  Direct3D 11.0 [level 11.0]
     Renderer: AMD Radeon HD 8370D (ID=0x9998)
     Vendor:   ATI
-    VRAM:     753 MB
-    Driver:   13.351.1001.0
+    VRAM:     754 MB
+    Driver:   15.200.1062.1004
 Begin MonoManager ReloadAssembly
 Platform assembly: C:\Users\Jonah\Desktop\devstuff\git\Unity\Originals\VRPuzzle\VRPuzzle\VRPuzzle_Data\Managed\UnityEngine.dll (this message is harmless)
 Loading C:\Users\Jonah\Desktop\devstuff\git\Unity\Originals\VRPuzzle\VRPuzzle\VRPuzzle_Data\Managed\UnityEngine.dll into Unity Child Domain
@@ -17,37 +17,25 @@ Platform assembly: C:\Users\Jonah\Desktop\devstuff\git\Unity\Originals\VRPuzzle\
 Loading C:\Users\Jonah\Desktop\devstuff\git\Unity\Originals\VRPuzzle\VRPuzzle\VRPuzzle_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
 Platform assembly: C:\Users\Jonah\Desktop\devstuff\git\Unity\Originals\VRPuzzle\VRPuzzle\VRPuzzle_Data\Managed\UnityEngine.Analytics.dll (this message is harmless)
 Loading C:\Users\Jonah\Desktop\devstuff\git\Unity\Originals\VRPuzzle\VRPuzzle\VRPuzzle_Data\Managed\UnityEngine.Analytics.dll into Unity Child Domain
-- Completed reload, in  0.035 seconds
+- Completed reload, in  0.199 seconds
 Platform assembly: C:\Users\Jonah\Desktop\devstuff\git\Unity\Originals\VRPuzzle\VRPuzzle\VRPuzzle_Data\Managed\System.Core.dll (this message is harmless)
 Platform assembly: C:\Users\Jonah\Desktop\devstuff\git\Unity\Originals\VRPuzzle\VRPuzzle\VRPuzzle_Data\Managed\System.dll (this message is harmless)
 desktop: 1920x1080 60Hz; virtual: 1920x1080 at 0,0
 <RI> Initializing input.
 <RI> Input initialized.
 <RI> Initialized touch support.
-UnloadTime: 2.126904 ms
+UnloadTime: 17.500132 ms
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: 2794 -> priority: 1 
+  Thread -> id: 1358 -> priority: 1 
 Unloading 5 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 7.831644 ms
+UnloadTime: 19.105524 ms
 
 Unloading 7 unused Assets to reduce memory usage. Loaded Objects now: 544.
-Total: 0.603052 ms (FindLiveObjects: 0.054898 ms CreateObjectMapping: 0.038262 ms MarkObjects: 0.485214 ms  DeleteObjects: 0.023290 ms)
+Total: 0.489657 ms (FindLiveObjects: 0.050740 ms CreateObjectMapping: 0.037985 ms MarkObjects: 0.378195 ms  DeleteObjects: 0.021904 ms)
 
 Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 3.155005 ms
+UnloadTime: 22.758270 ms
 
-Unloading 215 unused Assets to reduce memory usage. Loaded Objects now: 326.
-Total: 6.389031 ms (FindLiveObjects: 0.114510 ms CreateObjectMapping: 0.045194 ms MarkObjects: 0.360445 ms  DeleteObjects: 5.866662 ms)
-
-Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 0.474955 ms
-
-Unloading 5 unused Assets to reduce memory usage. Loaded Objects now: 545.
-Total: 0.488819 ms (FindLiveObjects: 0.052125 ms CreateObjectMapping: 0.038539 ms MarkObjects: 0.375417 ms  DeleteObjects: 0.021349 ms)
-
-Unloading 2 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 4.274326 ms
-
-Unloading 219 unused Assets to reduce memory usage. Loaded Objects now: 326.
-Total: 6.569808 ms (FindLiveObjects: 0.489928 ms CreateObjectMapping: 0.069316 ms MarkObjects: 0.389835 ms  DeleteObjects: 5.618787 ms)
+Unloading 245 unused Assets to reduce memory usage. Loaded Objects now: 326.
+Total: 6.722950 ms (FindLiveObjects: 0.099262 ms CreateObjectMapping: 0.052403 ms MarkObjects: 0.456939 ms  DeleteObjects: 6.112403 ms)
 

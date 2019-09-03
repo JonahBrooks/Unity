@@ -309,9 +309,9 @@ public class PlayerScript : MonoBehaviour {
                 rotation = rotation % 360;
             }
         }
-            // Keep current block in center of screen
-            if (current != null)
-            {
+        // Keep current block in center of screen
+        if (current != null)
+        {
             current.transform.position = Camera.main.ScreenToWorldPoint(screenCenter);
             // See if piece is above or below board
             if (brickXYZ.y - boardXYZ.y < maxSnapDistance &&

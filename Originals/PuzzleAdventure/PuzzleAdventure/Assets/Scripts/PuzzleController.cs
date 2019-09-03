@@ -394,7 +394,10 @@ public class PuzzleController : MonoBehaviour {
         int cy = one.GetComponentInParent<Coordinates>().y;
         Vector2 pos1;
         Vector2 pos2;
-        if (x == cx - 1 || x == cx + 1 || y == cy - 1 || y == cy + 1)
+        // If slime 1 is within 1 of slime, and it's not the same slime
+        if ((x == cx - 1 || x == cx + 1 || x == cx) && 
+            (y == cy - 1 || y == cy + 1 || y == cy) && 
+            !(x == cx && y == cy))
         {
             // Clicked on a slime adjacent to current slime
             pos1 = one.position;
