@@ -18,7 +18,9 @@ public class PaddleController : MonoBehaviour
     public PaddleBounds leftLeapBounds;
     public PaddleBounds rightLeapProviderBounds;
     public PaddleBounds leftLeapProviderBounds;
-
+    public PaddleBounds rightRelativeKinectBounds;
+    public PaddleBounds leftRelativeKinectBounds;
+    
     public float movementSpeed;
     public float rotationSpeed;
 
@@ -26,6 +28,11 @@ public class PaddleController : MonoBehaviour
     private LeapProvider leapProvider;
     private Rigidbody rightRb;
     private Rigidbody leftRb;
+    private KinectWrapper.NuiSkeletonPositionIndex handRight = KinectWrapper.NuiSkeletonPositionIndex.HandRight;
+    private KinectWrapper.NuiSkeletonPositionIndex handLeft = KinectWrapper.NuiSkeletonPositionIndex.HandLeft;
+    private KinectWrapper.NuiSkeletonPositionIndex wristRight = KinectWrapper.NuiSkeletonPositionIndex.WristRight;
+    private KinectWrapper.NuiSkeletonPositionIndex wristLeft = KinectWrapper.NuiSkeletonPositionIndex.WristLeft;
+    private KinectWrapper.NuiSkeletonPositionIndex shoulderCenter = KinectWrapper.NuiSkeletonPositionIndex.ShoulderCenter;
     private Vector3 rightNewPosition;
     private Vector3 leftNewPosition;
     private Quaternion rightNewRotation;
@@ -44,7 +51,8 @@ public class PaddleController : MonoBehaviour
     {
         LeapProvider,
         Controller,
-        OnFixedFrame
+        OnFixedFrame,
+        Kinect
     }
 
     private void Awake()
@@ -164,6 +172,52 @@ public class PaddleController : MonoBehaviour
                 }
             }
         }
+
+        if(movementStyle == MovementStyleEnum.Kinect)
+        {
+            KinectManager manager = KinectManager.Instance;
+
+            // Make sure the manager is set up and a user is detected
+            if(manager && manager.IsInitialized() && manager.IsUserDetected())
+            {
+                uint playerID = manager.GetPlayer1ID();
+
+                // Handle right hand
+                if(manager.IsJointTracked(playerID, (int)handRight))
+                {
+                    // Calculate the position of the right hand in respect to the shoulderCenter position
+                    Vector3 relativePosition = manager.GetJointPosition(playerID, (int)handRight) - manager.GetJointPosition(playerID, (int)shoulderCenter);
+                    UpdatePaddleNewPosition(rightPaddle, relativePosition, rightRelativeKinectBounds, rightPaddleBounds, out rightNewPosition);
+                    // If the right paddle is allowed to tilt
+                    if (rightPaddleTilt)
+                    {
+                        Vector3 handPos = manager.GetJointPosition(playerID, (int)handRight);
+                        Vector3 wristPos = manager.GetJointPosition(playerID, (int)wristRight);
+
+                        Vector3 handNormal = (handPos - wristPos).normalized;
+                        UpdatePaddleNewRotation(rightPaddle, handNormal, out rightNewRotation);
+                    }
+                }
+
+                // Handle left hand
+                if (manager.IsJointTracked(playerID, (int)handLeft))
+                {
+                    // Calculate the position of the left hand in respect to the shoulderCenter position
+                    Vector3 relativePosition = manager.GetJointPosition(playerID, (int)handLeft) - manager.GetJointPosition(playerID, (int)shoulderCenter);
+                    Debug.Log(relativePosition);
+                    UpdatePaddleNewPosition(leftPaddle, relativePosition, leftRelativeKinectBounds, leftPaddleBounds, out leftNewPosition);
+                    // If the left paddle is allowed to tilt
+                    if (leftPaddleTilt)
+                    {
+                        Vector3 handPos = manager.GetJointPosition(playerID, (int)handLeft);
+                        Vector3 wristPos = manager.GetJointPosition(playerID, (int)wristLeft);
+
+                        Vector3 handNormal = (handPos - wristPos).normalized;
+                        UpdatePaddleNewRotation(leftPaddle, handNormal, out leftNewRotation);
+                    }
+                }
+            }
+        }
     }
 
     private void FixedUpdate()
@@ -216,6 +270,47 @@ public class PaddleController : MonoBehaviour
         // Scale newX and newY to be within the paddle bounds
         newX = ((newX - leapBounds.Left) * (paddleBounds.Right - paddleBounds.Left)) / (leapBounds.Right - leapBounds.Left) + paddleBounds.Left;
         newY = ((newY - leapBounds.Bottom) * (paddleBounds.Top - paddleBounds.Bottom)) / (leapBounds.Top - leapBounds.Bottom) + paddleBounds.Bottom;
+
+        newPosition = new Vector3(newX, newY, this.transform.position.z);
+    }
+
+    // Adjusts the tilt of the paddles based on hand tilt
+    // Override for use with Kinect sensor
+    private void UpdatePaddleNewRotation(GameObject paddle, Vector3 handNormal, out Quaternion paddleNewRotation)
+    {
+        Vector3 newNormal = new Vector3(-handNormal.x, -handNormal.y, 0);
+
+        paddleNewRotation = Quaternion.LookRotation(Vector3.forward, newNormal);
+    }
+
+    // Updates the newX and newY for moving the specified paddle in relation to the specified hand and boundaries
+    // Override for use with Kinect sensor
+    private void UpdatePaddleNewPosition(GameObject paddle, Vector3 handPosition, PaddleBounds kinectBounds, PaddleBounds paddleBounds, out Vector3 newPosition)
+    {
+        float newX = handPosition.x;
+        float newY = handPosition.y;
+
+        // Clamp newX and newY to be within the kinect bounds
+        if (newY > kinectBounds.Top)
+        {
+            newY = kinectBounds.Top;
+        }
+        else if (newY < kinectBounds.Bottom)
+        {
+            newY = kinectBounds.Bottom;
+        }
+        if (newX > kinectBounds.Right)
+        {
+            newX = kinectBounds.Right;
+        }
+        else if (newX < kinectBounds.Left)
+        {
+            newX = kinectBounds.Left;
+        }
+
+        // Scale newX and newY to be within the paddle bounds
+        newX = ((newX - kinectBounds.Left) * (paddleBounds.Right - paddleBounds.Left)) / (kinectBounds.Right - kinectBounds.Left) + paddleBounds.Left;
+        newY = ((newY - kinectBounds.Bottom) * (paddleBounds.Top - paddleBounds.Bottom)) / (kinectBounds.Top - kinectBounds.Bottom) + paddleBounds.Bottom;
 
         newPosition = new Vector3(newX, newY, this.transform.position.z);
     }
