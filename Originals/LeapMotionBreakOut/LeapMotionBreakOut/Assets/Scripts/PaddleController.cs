@@ -11,7 +11,7 @@ public class PaddleController : MonoBehaviour
     public GameObject leftPaddle;
     public bool rightPaddleTilt;
     public bool leftPaddleTilt;
-    public MovementStyleEnum movementStyle;
+    public static MovementStyleEnum movementStyle;
     public PaddleBounds rightPaddleBounds;
     public PaddleBounds leftPaddleBounds;
     public PaddleBounds rightLeapBounds;
@@ -204,7 +204,6 @@ public class PaddleController : MonoBehaviour
                 {
                     // Calculate the position of the left hand in respect to the shoulderCenter position
                     Vector3 relativePosition = manager.GetJointPosition(playerID, (int)handLeft) - manager.GetJointPosition(playerID, (int)shoulderCenter);
-                    Debug.Log(relativePosition);
                     UpdatePaddleNewPosition(leftPaddle, relativePosition, leftRelativeKinectBounds, leftPaddleBounds, out leftNewPosition);
                     // If the left paddle is allowed to tilt
                     if (leftPaddleTilt)

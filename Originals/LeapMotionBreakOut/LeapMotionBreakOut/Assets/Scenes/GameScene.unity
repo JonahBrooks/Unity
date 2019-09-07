@@ -973,7 +973,6 @@ MonoBehaviour:
   leftPaddle: {fileID: 44229812}
   rightPaddleTilt: 1
   leftPaddleTilt: 1
-  movementStyle: 3
   rightPaddleBounds:
     Left: 1.5
     Right: 7.3
@@ -1158,6 +1157,10 @@ PrefabInstance:
     - target: {fileID: 432918, guid: b9c7aaf0d314cb847a3b2a20e893f1b6, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 11435192, guid: b9c7aaf0d314cb847a3b2a20e893f1b6, type: 3}
+      propertyPath: editTimePose
+      value: 2
       objectReference: {fileID: 0}
     m_RemovedComponents:
     - {fileID: 11406336, guid: b9c7aaf0d314cb847a3b2a20e893f1b6, type: 3}
