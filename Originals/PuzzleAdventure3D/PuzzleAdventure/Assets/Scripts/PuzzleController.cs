@@ -131,7 +131,15 @@ public class PuzzleController : MonoBehaviour {
         scoreText.text = "Player Health: " + PuzzleController.playerHealth + "\t\tEnemy Health: " + slimeHealth;
         if(slimeHealth <= 0)
         {
-            SceneManager.LoadScene("Adventure");
+            AdventureController.slimesRemaining--;
+            if(AdventureController.slimesRemaining <= 0)
+            {
+                SceneManager.LoadScene("Victory");
+            }
+            else
+            {
+                SceneManager.LoadScene("Adventure");
+            }
         }
         else if (PuzzleController.playerHealth <= 0)
         {
