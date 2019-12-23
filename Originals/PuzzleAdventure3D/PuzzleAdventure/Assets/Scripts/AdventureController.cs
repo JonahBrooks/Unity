@@ -26,6 +26,15 @@ public class AdventureController : MonoBehaviour
     public float minSlimeZ;
     public float maxSlimeZ;
 
+    public Transform treeCollection;
+
+    public int numRowsOfTrees;
+    public GameObject treePrefab;
+    public float treeLineMinX;
+    public float treeLineMaxX;
+    public float treeLineMinZ;
+    public float treeLineMaxZ;
+
     private GameObject[] slimeObjects;
 
     // Start is called before the first frame update
@@ -71,7 +80,33 @@ public class AdventureController : MonoBehaviour
             GameObject.FindWithTag("Player").transform.position = playerCoords;
             GameObject.FindWithTag("Player").transform.rotation = playerRotation;
         }
-        
+
+        // Instantiate tree lines
+        float treeDiameter = treePrefab.GetComponent<Renderer>().bounds.size.x;
+        for (int row = 0; row < numRowsOfTrees; row++)
+        {
+            // Calculate the offset for this row of trees, including an alternating half diameter offset to prevent the trees from being in a perfect row
+            float currentTreeLineMinX = treeLineMinX - (treeDiameter * row);
+            float currentTreeLineMaxX = treeLineMaxX + (treeDiameter * row);
+            float currentTreeLineMinZ = treeLineMinZ - (treeDiameter * row);
+            float currentTreeLineMaxZ = treeLineMaxZ + (treeDiameter * row);
+            // Instantiate tree line along the north and south tree lines
+            float treeX = currentTreeLineMinX;
+            while (treeX < currentTreeLineMaxX)
+            {
+                Instantiate(treePrefab, new Vector3(treeX + (.5f * treeDiameter) * (row % 2), 0, currentTreeLineMinZ), Quaternion.identity, treeCollection).transform.Rotate(new Vector3(-90, 0, 0));
+                Instantiate(treePrefab, new Vector3(treeX + (.5f * treeDiameter) * (row % 2), 0, currentTreeLineMaxZ), Quaternion.identity, treeCollection).transform.Rotate(new Vector3(-90, 0, 0)); ;
+                treeX += treeDiameter;
+            }                                                                     
+            // Instantiate tree line along the east and west tree lines
+            float treeZ = currentTreeLineMinZ;
+            while (treeZ < currentTreeLineMaxZ)
+            {
+                Instantiate(treePrefab, new Vector3(currentTreeLineMinX, 0, treeZ + (.5f * treeDiameter) * (row % 2)), Quaternion.identity, treeCollection).transform.Rotate(new Vector3(-90, 0, 0)); ;
+                Instantiate(treePrefab, new Vector3(currentTreeLineMaxX, 0, treeZ + (.5f * treeDiameter) * (row % 2)), Quaternion.identity, treeCollection).transform.Rotate(new Vector3(-90, 0, 0)); ;
+                treeZ += treeDiameter;
+            }
+        }
     }
 
     // Update is called once per frame
