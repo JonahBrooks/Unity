@@ -14,6 +14,9 @@ public class PuzzleController : MonoBehaviour {
     public int slimeMaxHealth;
     public float selectedResizeFactor;
 
+    public Image fadeImage;
+    public Text loadingText;
+
     // Stores for each element in board if it should be cleared
     private bool[][] toClear = new bool[8][];
     // For initializing slimes
@@ -138,6 +141,9 @@ public class PuzzleController : MonoBehaviour {
             }
             else
             {
+                // Display the "loading screen"
+                loadingText.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+                fadeImage.color = new Color(0, 0, 0, 1.0f);
                 SceneManager.LoadScene("Adventure");
             }
         }

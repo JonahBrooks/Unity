@@ -16,6 +16,7 @@ public class CharacterController : MonoBehaviour
 
     public Image fadeImage;
     public Text fadeText;
+    public Text loadingText;
 
     public float fadeSpeed;
 
@@ -142,9 +143,14 @@ public class CharacterController : MonoBehaviour
     {
         if(collision.transform.CompareTag("Slime"))
         {
+            // Store the character's rotation and position so they respawn in the same place after the puzzle match
             AdventureController.playerCoords = transform.position;
             AdventureController.playerRotation = transform.rotation;
+            // Indicate that this slime is dead now
             AdventureController.slimeIsAlive[collision.gameObject.GetComponent<SlimeController>().index] = false;
+            // Display the "loading screen"
+            loadingText.color = new Color(1.0f, 1.0f, 1.0f, 1.0f);
+            fadeImage.color = new Color(0, 0, 0, 1.0f);
             SceneManager.LoadScene("Puzzle");
         }
     }
