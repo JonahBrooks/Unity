@@ -73,6 +73,7 @@ public class AdventureController : MonoBehaviour
                 if(slimeIsAlive[i])
                 {
                     slimeObjects[i] = Instantiate(slimes[i % slimes.Length], slimeCollection);
+                    slimeObjects[i].GetComponent<SlimeController>().index = i;
                     slimeObjects[i].transform.position = slimeCoords[i];
                 }
             }

@@ -17,6 +17,8 @@ public class CharacterController : MonoBehaviour
     public Image fadeImage;
     public Text fadeText;
 
+    public float fadeSpeed;
+
     private bool resting = false;
     private Rigidbody rb;
 
@@ -102,7 +104,8 @@ public class CharacterController : MonoBehaviour
         rb.angularVelocity = Vector3.zero;
         rb.velocity = Vector3.zero;
 
-        for (int i = 0; i < 64; i++)
+        // Fade in
+        for (float i = 0; i < 256; i+= fadeSpeed)
         {
             fadeText.color = new Color(1.0f, 1.0f, 1.0f, i/255f);
             fadeImage.color = new Color(0, 0, 0, i/255f);
@@ -111,12 +114,17 @@ public class CharacterController : MonoBehaviour
 
         PuzzleController.playerHealth = PuzzleController.maxHealth;
 
-        for(int i = 64; i >= 0; i--)
+        // Fade out
+        for(float i = 255; i >= 0; i-=fadeSpeed)
         {
             fadeText.color = new Color(1.0f, 1.0f, 1.0f, i/255f);
             fadeImage.color = new Color(0, 0, 0, i/255f);
             yield return null;
         }
+
+        // Finish fading out
+        fadeText.color = new Color(1.0f, 1.0f, 1.0f, 0);
+        fadeImage.color = new Color(0, 0, 0, 0);
 
         resting = false;
     }
