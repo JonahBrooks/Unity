@@ -33,6 +33,8 @@ public class MetalDeer : MonoBehaviour {
     private int last_move_angle = 90;
     private bool piecesMoving = false;
 
+    private Model pouncingTiger = null; // Store the Model of the tiger that killed the deer 
+
 
     // Private class for storing model information
     private class Model
@@ -75,6 +77,17 @@ public class MetalDeer : MonoBehaviour {
             return null;
         }
 
+        public static Model GetModelByNewXYZ(int new_x, int new_y, int new_z)
+        {
+            foreach (var m in models)
+            {
+                if (m.newx == new_x && m.newy == new_y && m.newz == new_z)
+                {
+                    return m;
+                }
+            }
+            return null;
+        }
     }
 
     // Private class for storing unit information
@@ -849,26 +862,166 @@ public class MetalDeer : MonoBehaviour {
                 break;
         }
 
-        x = new_x;
-        y = new_y;
+        
+
+        // Check if the player reached the exit
         if (overlap == 'X')
         {
             if (player) Debug.Log("Win!");
+            x = new_x;
+            y = new_y;
             return 1;
         }
+        // Check if the player is standing in the same space as a wolf
         if (overlap == 'Q' || overlap == 'E' || overlap == '2' || overlap == 'S')
         {
             if (player) Debug.Log("Lose!");
+            x = new_x;
+            y = new_y;
             return -1;
         }
+        // Check if the player walked through a wolf
+        if (overlap == ' ')
+        {
+            char newOccupantOfOldSpace = map.get_element(x,y).c;
+            if (newOccupantOfOldSpace == 'Q' && direction == 'd' || // Wolf walking left, deer moved right
+                newOccupantOfOldSpace == 'E' && direction == 'a' || // Wolf walking right, deer moved left
+                newOccupantOfOldSpace == '2' && direction == 's' || // Wolf walking up, deer moved down
+                newOccupantOfOldSpace == 'S' && direction == 'w')   // Wolf walking down, deer moved up 
+            {
+                // Player switched places with a wolf
+                if (player) Debug.Log("Lose!");
+                x = new_x;
+                y = new_y;
+                return -1;
+            }
+        }
+        // Check if the player is seen by a hunter/tiger
         if (overlap == 'G' || overlap == 'J' || overlap == 'Y' || overlap == 'N' || overlap == 'H')
         {
             if (player) Debug.Log("Lose!");
+            if(overlap == 'H') // If the tiger is pouncing
+            {
+                pouncingTiger = GetModelOfPouncingTiger(new_x, new_y, ref map);
+            }
+            x = new_x;
+            y = new_y;
             return -1;
         }
+        x = new_x;
+        y = new_y;
         return 0;
 
 
+    }
+
+    private Model GetModelOfPouncingTiger(int new_x, int new_y, ref Map map)
+    {
+        // Detect which tiger saw the deer, and return the model of that tiger
+        char checkingCharacter = 'H';
+        int checkingX = new_x;
+        int checkingY = new_y;
+
+        // Check if the tiger is above the deer
+        checkingCharacter = 'H';
+        checkingX = new_x;
+        checkingY = new_y;
+        while (checkingCharacter == 'H')// While we are still detecting sight lines
+        {
+            checkingX = new_x;
+            checkingY -= 1;
+            // If we are still in the play field
+            if (map.convert_to_index(checkingX, checkingY) < map.size() && map.convert_to_index(checkingX, checkingY) >= 0)
+            {
+                checkingCharacter = map.get_element(checkingX, checkingY).c;
+            }
+            else
+            {
+                break; // If we are not in the playfield, stop looking for tigers
+            }
+        }
+        // Check if the first non-sightline character was a downward facing tiger
+        if (checkingCharacter == 'N')
+        {
+            return Model.GetModelByNewXYZ(checkingX, 0, checkingY);
+        } // Otherwise do nothing, as we know there are no pouncing tigers above the deer
+
+
+        // Check if the tiger is below the deer
+        checkingCharacter = 'H';
+        checkingX = new_x;
+        checkingY = new_y;
+        while (checkingCharacter == 'H')// While we are still detecting sight lines
+        {
+            checkingX = new_x;
+            checkingY += 1;
+            // If we are still in the play field
+            if (map.convert_to_index(checkingX, checkingY) < map.size() && map.convert_to_index(checkingX, checkingY) >= 0)
+            {
+                checkingCharacter = map.get_element(checkingX, checkingY).c;
+            }
+            else
+            {
+                break; // If we are not in the playfield, stop looking for tigers
+            }
+        }
+        // Check if the first non-sightline character was a upward facing tiger
+        if (checkingCharacter == 'Y')
+        {
+            return Model.GetModelByNewXYZ(checkingX, 0, checkingY);
+        } // Otherwise do nothing, as we know there are no pouncing tigers below the deer
+
+
+        // Check if the tiger is to the left of the deer
+        checkingCharacter = 'H';
+        checkingX = new_x;
+        checkingY = new_y;
+        while (checkingCharacter == 'H')// While we are still detecting sight lines
+        {
+            checkingX -= 1;
+            checkingY = new_y;
+            // If we are still in the play field
+            if (map.convert_to_index(checkingX, checkingY) < map.size() && map.convert_to_index(checkingX, checkingY) >= 0)
+            {
+                checkingCharacter = map.get_element(checkingX, checkingY).c;
+            }
+            else
+            {
+                break; // If we are not in the playfield, stop looking for tigers
+            }
+        }
+        // Check if the first non-sightline character was a right facing tiger
+        if (checkingCharacter == 'J')
+        {
+            return Model.GetModelByNewXYZ(checkingX, 0, checkingY);
+        } // Otherwise do nothing, as we know there are no pouncing tigers to the left of the deer
+
+
+        // Check if the tiger is to the right of the deer
+        checkingCharacter = 'H';
+        checkingX = new_x;
+        checkingY = new_y;
+        while (checkingCharacter == 'H')// While we are still detecting sight lines
+        {
+            checkingX += 1;
+            checkingY = new_y;
+            // If we are still in the play field
+            if (map.convert_to_index(checkingX, checkingY) < map.size() && map.convert_to_index(checkingX, checkingY) >= 0)
+            {
+                checkingCharacter = map.get_element(checkingX, checkingY).c;
+            }
+            else
+            {
+                break; // If we are not in the playfield, stop looking for tigers
+            }
+        }
+        // Check if the first non-sightline character was a left facing tiger
+        if (checkingCharacter == 'G')
+        {
+            return Model.GetModelByNewXYZ(checkingX, 0, checkingY);
+        } // Otherwise do nothing, as we know there are no pouncing tigers to the right the deer
+
+        return null;
     }
 
 
@@ -954,7 +1107,7 @@ public class MetalDeer : MonoBehaviour {
 
         float stepsToComplete = 10f;
 
-        float step = 1f / stepsToComplete; ;
+        float step = 1f / stepsToComplete;
 
         // Rotate deer instantly
         foreach (var m in Model.models)
@@ -1024,8 +1177,40 @@ public class MetalDeer : MonoBehaviour {
         piecesMoving = false;
     }
 
-    // Resets all the models based on their map positions
-    void ResetAllModels()
+    IEnumerator MakeTigerPounceThenGameOver()
+    {
+        // Update all piece locations and rotations first
+        StartCoroutine(MoveAllPieces());
+
+        // Wait while pieces are moving and rotating
+        while(piecesMoving == true)
+        {
+            yield return null;
+        }
+
+        // Block input while tiger is pouncing
+        piecesMoving = true;
+
+        float stepsToComplete = 1f;
+
+        float step = 1f / stepsToComplete;
+
+        GameObject tiger = pouncingTiger.model;
+        GameObject deer = Model.GetModelByNewXYZ(current_map.deerx, 0, current_map.deery).model;
+
+        while(tiger.transform.position != deer.transform.position)
+        {
+            tiger.transform.position = Vector3.MoveTowards(tiger.transform.position, deer.transform.position, step);
+            yield return new WaitForSeconds(.005f);
+        }
+
+        SceneManager.LoadScene("GameOver");
+        yield return null;
+
+    }
+
+        // Resets all the models based on their map positions
+        void ResetAllModels()
     {
         foreach(var m in model_map)
         {
@@ -1214,15 +1399,22 @@ public class MetalDeer : MonoBehaviour {
             current_map = new Map(map_string);
             ResetAllModels();
         }
-        // The player lost
-        if(move_result == -1)
-        {
-            SceneManager.LoadScene("GameOver");
-        }
-
         //text_map(current_map); // For debugging
 
-        if(playerMoved)
+        // The player lost
+        if (move_result == -1)
+        {
+            // If there is a pouncing tiger, move it into place then game over
+            if(pouncingTiger != null)
+            {
+                StartCoroutine(MakeTigerPounceThenGameOver());
+            }
+            else // Otherwise just game over
+            {
+                SceneManager.LoadScene("GameOver");
+            }
+        }
+        else if(playerMoved)
         {
             
             StartCoroutine("MoveAllPieces");

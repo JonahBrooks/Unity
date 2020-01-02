@@ -980,23 +980,46 @@ int move(bool player, char direction, Map& map)
 	default:
 		cout << "Invalid input: wasd only.\n";
 	}
-	x = new_x;
-	y = new_y;
+
 	if (overlap.c == 'X')
 	{
 		if (player) cout << "Win!\n";
+		x = new_x;
+		y = new_y;
 		return 1;
 	}
 	if (overlap.c == 'Q' || overlap.c == 'E' || overlap.c == '2' || overlap.c == 'S')
 	{
 		if (player) cout << "Lose! To Unit #" << overlap.id << "\n";
+		x = new_x;
+		y = new_y;
 		return -1;
+	}
+	// Check if the player walked through a wolf
+	if (overlap.c == ' ')
+	{
+		char newOccupantOfOldSpace = map.get_element(x, y).c;
+		if (newOccupantOfOldSpace == 'Q' && direction == 'd' || // Wolf walking left, deer moved right
+			newOccupantOfOldSpace == 'E' && direction == 'a' || // Wolf walking right, deer moved left
+			newOccupantOfOldSpace == '2' && direction == 's' || // Wolf walking up, deer moved down
+			newOccupantOfOldSpace == 'S' && direction == 'w')   // Wolf walking down, deer moved up 
+		{
+			// Player switched places with a wolf
+			if (player) cout << "Lose!";
+			x = new_x;
+			y = new_y;
+			return -1;
+		}
 	}
 	if (overlap.c == 'G' || overlap.c == 'J' || overlap.c == 'Y' || overlap.c == 'N' || overlap.c == 'H')
 	{
 		if (player)cout << "Lose! To Unit #" << overlap.id << "\n";
+		x = new_x;
+		y = new_y;
 		return -1;
 	}
+	x = new_x;
+	y = new_y;
 	return 0;
 }
 
@@ -1194,7 +1217,7 @@ int main()
 	int num_tries = 100;
 	int wins = 0;
   int num_maps = 100;
-	Map::ideal = 70;
+	Map::ideal = 50;
 	srand(time(NULL));
 
 	bool map_found = false;
