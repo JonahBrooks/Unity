@@ -20,6 +20,11 @@ public class CharacterController : MonoBehaviour
 
     public float fadeSpeed;
 
+    public float minDelayBetweenIdleAnimations;
+    public float maxDelayBetweenIdleAnimations;
+
+    private float delayUntilIdleAnimation;
+
     private bool resting = false;
     private Rigidbody rb;
 
@@ -28,6 +33,8 @@ public class CharacterController : MonoBehaviour
     {
         thirdPersonCamera.enabled = thirdPerson;
         firstPersonCamera.enabled = !thirdPerson;
+
+        delayUntilIdleAnimation = Random.Range(minDelayBetweenIdleAnimations, maxDelayBetweenIdleAnimations);
 
         rb = GetComponent<Rigidbody>();
     }
@@ -48,14 +55,34 @@ public class CharacterController : MonoBehaviour
             thirdPersonCamera.enabled = thirdPerson;
             firstPersonCamera.enabled = !thirdPerson;
         }
+
     }
 
     private void FixedUpdate()
     {
+        Animator animator = transform.gameObject.GetComponentInChildren<Animator>();
+
+        animator.SetFloat("Velocity", rb.velocity.magnitude);
+
+        
+
         // If the player is resting, don't allow the player to move
-        if(resting)
+        if (resting)
         {
             return;
+        }
+
+        // Randomly play idle animation if enough time has elapsed
+        if (animator.GetCurrentAnimatorStateInfo(0).IsName("None"))
+        {
+            // Count down until the next animation
+            delayUntilIdleAnimation -= Time.deltaTime;
+            animator.SetFloat("IdleDelay", delayUntilIdleAnimation);
+            if (delayUntilIdleAnimation <= 0)
+            {
+                // Reset the clock between animations
+                delayUntilIdleAnimation = Random.Range(minDelayBetweenIdleAnimations, maxDelayBetweenIdleAnimations);
+            }
         }
 
         if (Input.GetKey(KeyCode.A) || Input.GetKey(KeyCode.LeftArrow))
@@ -95,6 +122,7 @@ public class CharacterController : MonoBehaviour
         {
             rb.angularVelocity = Vector3.zero;
         }
+
     }
 
     private IEnumerator Rest()
