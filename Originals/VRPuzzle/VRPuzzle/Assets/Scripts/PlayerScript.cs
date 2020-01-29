@@ -141,6 +141,19 @@ public class PlayerScript : MonoBehaviour {
                 // Debug: current.transform.Rotate(new Vector3(1, 0, 0), 90);
                 castShadow();
             }
+
+            // Keep current block in center of screen
+            current.transform.position = Camera.main.ScreenToWorldPoint(screenCenter);
+            // See if piece is above or below board
+            if (brickXYZ.y - boardXYZ.y < maxSnapDistance &&
+                brickXYZ.x + brickHWL.x / 2.0f > boardXYZ.x - boardHWL.x / 2.0f &&
+                brickXYZ.x - brickHWL.x / 2.0f < boardXYZ.x + boardHWL.x / 2.0f &&
+                brickXYZ.z + brickHWL.z / 2.0f > boardXYZ.z - boardHWL.z / 2.0f &&
+                brickXYZ.z - brickHWL.z / 2.0f < boardXYZ.z + boardHWL.z / 2.0f
+                )
+            {
+                current.transform.position = new Vector3(current.transform.position.x, snapDistance, current.transform.position.z);
+            }
         }
 
         // Clear board on escape key / back button press
@@ -260,7 +273,7 @@ public class PlayerScript : MonoBehaviour {
 
         // For Android:
 
-        if (Application.platform == RuntimePlatform.Android && !UnityEngine.VR.VRSettings.enabled)
+        if (Application.platform == RuntimePlatform.Android && !UnityEngine.XR.XRSettings.enabled)
         {
             Input.gyro.enabled = true;
             Camera.main.transform.rotation = Input.gyro.attitude;
@@ -309,21 +322,7 @@ public class PlayerScript : MonoBehaviour {
                 rotation = rotation % 360;
             }
         }
-        // Keep current block in center of screen
-        if (current != null)
-        {
-            current.transform.position = Camera.main.ScreenToWorldPoint(screenCenter);
-            // See if piece is above or below board
-            if (brickXYZ.y - boardXYZ.y < maxSnapDistance &&
-                brickXYZ.x + brickHWL.x / 2.0f > boardXYZ.x - boardHWL.x / 2.0f &&
-                brickXYZ.x - brickHWL.x / 2.0f < boardXYZ.x + boardHWL.x / 2.0f &&
-                brickXYZ.z + brickHWL.z / 2.0f > boardXYZ.z - boardHWL.z / 2.0f &&
-                brickXYZ.z - brickHWL.z / 2.0f < boardXYZ.z + boardHWL.z / 2.0f
-               )
-            {
-                current.transform.position = new Vector3(current.transform.position.x, snapDistance, current.transform.position.z);
-            }
-        }
+        
 
         scoreTxt.text = "Score: " + score.ToString();
     }
@@ -847,8 +846,8 @@ public class PlayerScript : MonoBehaviour {
 
         brickXYZ = current.GetComponentInChildren<Renderer>().bounds.center;
         // TODO: Display shadow of where piece will place
-        x = (int)-1;
-        y = (int)-1;
+        x = (int)-10;
+        y = (int)-10;
         if (Physics.Raycast(brickXYZ, new Vector3(0, -1, 0), out hit) &&
               hit.collider.transform.parent != null &&
               hit.collider.transform.parent.tag == "Board")
