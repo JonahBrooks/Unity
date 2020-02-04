@@ -31,6 +31,10 @@ public class CharacterController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        // Stop all animations that may be playing when the scene loads
+        Animator animator = transform.gameObject.GetComponentInChildren<Animator>();
+        animator.SetTrigger("SceneLoad");
+
         thirdPersonCamera.enabled = thirdPerson;
         firstPersonCamera.enabled = !thirdPerson;
 
